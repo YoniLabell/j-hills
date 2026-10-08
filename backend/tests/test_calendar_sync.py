@@ -210,3 +210,19 @@ def test_admin_manual_sync_endpoint(admin_client, db, apartment, monkeypatch):
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["success"] is True and body["events_imported"] == 2 and body["last_sync"]
+
+
+def test_webcal_links_are_normalized(admin_client):
+    r = admin_client.post(
+        "/api/admin/apartments",
+        json={"name": "Webcal Flat", "airbnb_ical_url": "webcal://www.airbnb.com/calendar/ical/1.ics?s=x"},
+    )
+    assert r.status_code == 201, r.text
+    assert r.json()["airbnb_ical_url"] == "https://www.airbnb.com/calendar/ical/1.ics?s=x"
+
+
+def test_html_page_instead_of_calendar_gives_helpful_error(db, apartment):
+    result = sync_apartment(
+        db, apartment.id, fetcher=lambda url: b"<!DOCTYPE html><html><body>Airbnb</body></html>"
+    )
+    assert not result.success and "Export calendar" in result.error

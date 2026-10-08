@@ -28,7 +28,23 @@ from app.services.availability_service import lock_apartment
 logger = logging.getLogger(__name__)
 
 LOCAL_TZ = ZoneInfo("Asia/Jerusalem")
-USER_AGENT = "JerusalemApartments-CalendarSync/1.0"
+# Some calendar hosts (Airbnb included) reject requests that don't look like a browser.
+REQUEST_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+    ),
+    "Accept": "text/calendar, text/plain;q=0.9, */*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.8",
+}
+
+HTTP_ERROR_HINTS = {
+    401: "the link is private or expired — export a new link from Airbnb",
+    403: "access denied — export a new link from Airbnb and paste it again",
+    404: "the calendar was not found — check the link or export a new one from Airbnb",
+    410: "the calendar link is no longer valid — export a new one from Airbnb",
+    429: "Airbnb is rate limiting requests — try again in a few minutes",
+}
 
 
 class CalendarSyncError(Exception):
@@ -82,12 +98,14 @@ def fetch_ics(url: str, *, timeout: float | None = None, max_bytes: int | None =
     max_bytes = max_bytes or settings.calendar_max_bytes
     url = validate_feed_url(url)
     try:
-        with httpx.Client(
-            timeout=timeout, follow_redirects=True, headers={"User-Agent": USER_AGENT}
-        ) as client:
+        with httpx.Client(timeout=timeout, follow_redirects=True, headers=REQUEST_HEADERS) as client:
             with client.stream("GET", url) as response:
                 if response.status_code != 200:
-                    raise CalendarSyncError(f"Calendar server responded with HTTP {response.status_code}.")
+                    hint = HTTP_ERROR_HINTS.get(response.status_code, "")
+                    raise CalendarSyncError(
+                        f"Calendar server responded with HTTP {response.status_code}"
+                        + (f": {hint}." if hint else ".")
+                    )
                 chunks: list[bytes] = []
                 size = 0
                 for chunk in response.iter_bytes():
@@ -128,6 +146,11 @@ def parse_ics(data: bytes | str) -> list[ParsedEvent]:
     else:
         text = data
     if "BEGIN:VCALENDAR" not in text.upper():
+        if "<html" in text[:2000].lower():
+            raise CalendarSyncError(
+                "The link returned a web page instead of a calendar. Use the Airbnb "
+                "'Export calendar' link (ending in .ics?s=...), not the listing page link."
+            )
         raise CalendarSyncError("Response is not an iCal calendar.")
     try:
         cal = Calendar.from_ical(text)

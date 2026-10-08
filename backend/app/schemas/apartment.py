@@ -129,6 +129,8 @@ class ApartmentBase(BaseModel):
     @classmethod
     def _url(cls, v: str) -> str:
         v = (v or "").strip()
+        if re.match(r"^webcals?://", v, re.IGNORECASE):  # calendar-app links: same feed over https
+            v = "https://" + v.split("://", 1)[1]
         if v and not re.match(r"^https?://", v, re.IGNORECASE):
             raise ValueError("Must be an http(s) URL.")
         return v

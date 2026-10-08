@@ -160,12 +160,14 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
             </div>
           </section>
 
-          {mapEmbed && (
+          {(mapEmbed || mapLink) && (
             <section aria-labelledby="location">
               <h2 id="location" className="font-serif text-3xl">{d.location}</h2>
-              <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-ink-900/10">
-                <iframe title={`${d.location} – ${apt.name}`} src={mapEmbed} className="h-80 w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-              </div>
+              {mapEmbed && (
+                <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-ink-900/10">
+                  <iframe title={`${d.location} – ${apt.name}`} src={mapEmbed} className="h-80 w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+                </div>
+              )}
               {mapLink && (
                 <a href={mapLink} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gold-700 hover:underline">
                   {d.openMap} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />

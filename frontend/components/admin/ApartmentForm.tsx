@@ -210,7 +210,7 @@ export default function ApartmentForm({ apartment, onSaved }: { apartment?: Admi
             </datalist>
           </Field>
           <Field label="Address" hint="Private — not shown on the public website."><input maxLength={300} className={inputClass} {...text("address")} /></Field>
-          <Field label="Google Maps link" className="md:col-span-2" hint="Paste a Google Maps URL; coordinates are filled in automatically when the link contains them.">
+          <Field label="Google Maps link" className="md:col-span-2" hint="Paste any Google Maps link (also short share links like maps.app.goo.gl/…). Coordinates are filled in automatically when you save, and the map appears on the apartment page.">
             <input
               type="url"
               maxLength={1000}

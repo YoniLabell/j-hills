@@ -43,6 +43,7 @@ from app.services.availability_service import (
 )
 from app.services.calendar_sync import sync_apartment
 from app.services.image_service import ImageValidationError, delete_stored_image, store_image
+from app.services.maps import resolve_coords
 from app.services.serializers import apartment_admin, image_out
 
 router = APIRouter(prefix="/api/admin", tags=["admin-apartments"], dependencies=[Depends(get_current_admin)])
@@ -135,6 +136,17 @@ SCALAR_FIELDS = (
 NULLABLE_FIELDS = {"latitude", "longitude"}
 
 
+def _fill_coords_from_maps_url(apt: Apartment, url_changed: bool) -> None:
+    """Derive latitude/longitude from the Google Maps link (also short share links)."""
+    if not apt.google_maps_url:
+        return
+    if not url_changed and apt.latitude is not None and apt.longitude is not None:
+        return
+    coords = resolve_coords(apt.google_maps_url)
+    if coords:
+        apt.latitude, apt.longitude = coords
+
+
 def _out(db: Session, request: Request, apt: Apartment) -> ApartmentAdminOut:
     db.refresh(apt)
     return apartment_admin(apt, public_base_url(request))
@@ -164,6 +176,7 @@ def admin_create_apartment(payload: ApartmentCreate, request: Request, db: Sessi
     for field in SCALAR_FIELDS:
         setattr(apt, field, getattr(payload, field))
     db.add(apt)
+    _fill_coords_from_maps_url(apt, url_changed=True)
     _apply_translations(apt, payload.translations)
     _apply_amenities(db, apt, payload.amenity_ids)
     db.commit()
@@ -180,9 +193,11 @@ def admin_update_apartment(
         if db.scalar(select(Apartment.id).where(Apartment.slug == data["slug"], Apartment.id != apt.id)):
             raise HTTPException(status_code=409, detail="Slug is already in use.")
         apt.slug = data["slug"]
+    previous_maps_url = apt.google_maps_url
     for field in SCALAR_FIELDS:
         if field in data and (data[field] is not None or field in NULLABLE_FIELDS):
             setattr(apt, field, data[field])
+    _fill_coords_from_maps_url(apt, url_changed=apt.google_maps_url != previous_maps_url)
     if payload.translations is not None:
         _apply_translations(apt, payload.translations)
     if payload.amenity_ids is not None:

@@ -11,11 +11,16 @@ alembic upgrade head
 #    (free Render instances have no Shell).
 python -m app.scripts.create_admin --if-missing
 
-# 3. API on the container's loopback only; Next.js is the public entry point.
+# 3. Optional demo apartments (SEED_DEMO_DATA=true), only into an empty database.
+case "$SEED_DEMO_DATA" in
+  true|1|yes) python -m app.scripts.seed --if-empty ;;
+esac
+
+# 4. API on the container's loopback only; Next.js is the public entry point.
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips="*" &
 API_PID=$!
 
-# 4. Website on Render's $PORT.
+# 5. Website on Render's $PORT.
 cd /app/web
 HOSTNAME=0.0.0.0 PORT="${PORT:-10000}" node server.js &
 WEB_PID=$!

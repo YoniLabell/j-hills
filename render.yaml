@@ -63,3 +63,7 @@ services:
         sync: false
       - key: WHATSAPP_NUMBER   # e.g. 972501234567 (editable later in Settings)
         sync: false
+      # "true" adds 3 demo apartments on startup, only while the database has no
+      # apartments. Delete them from the admin whenever you like.
+      - key: SEED_DEMO_DATA
+        value: "false"

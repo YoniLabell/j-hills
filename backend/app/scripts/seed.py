@@ -4,8 +4,15 @@
 
 Idempotent: apartments whose slug already exists are skipped. Image URLs point
 at placeholder SVGs shipped with the frontend (``frontend/public/images``).
+
+    python -m app.scripts.seed --if-empty
+
+Only seeds when the database has no apartments at all. Used on startup of the
+single-service deploy when SEED_DEMO_DATA=true, so demo apartments you delete
+don't come back after a restart once you have your own apartments.
 """
 
+import argparse
 import sys
 from datetime import time
 from decimal import Decimal
@@ -173,9 +180,15 @@ APARTMENTS = [
 ]
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Create demo apartments.")
+    parser.add_argument("--if-empty", action="store_true", help="Only seed when there are no apartments.")
+    args = parser.parse_args(argv)
     with SessionLocal() as db:
         get_site_settings(db)
+        if args.if_empty and db.scalar(select(Apartment.id).limit(1)) is not None:
+            print("Apartments already exist; skipping demo data.")
+            return 0
         amenities = {a.key: a for a in db.scalars(select(Amenity))}
         created = 0
         for data in APARTMENTS:

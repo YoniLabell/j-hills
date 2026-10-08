@@ -351,6 +351,8 @@ On every start, `start.sh`:
 
    Then open the **Actions** tab → **Sync Airbnb calendars** → **Run workflow** to test it. After that it runs every hour. (GitHub only runs scheduled workflows from the default branch.)
 
+**Demo apartments:** set `SEED_DEMO_DATA` to `true` (service → **Environment**) and save. On the next start, three sample apartments with placeholder photos are added, but only if the database has no apartments yet. Delete them from **Apartments** when you add your own, and set the variable back to `false`.
+
 `FRONTEND_URL` and `NEXT_PUBLIC_API_URL` aren't needed here: the website and the API share one URL.
 
 ### Free-plan limits

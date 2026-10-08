@@ -41,3 +41,19 @@ def test_create_admin_if_missing_creates_from_env(db, monkeypatch):
     # Running again on the next restart changes nothing.
     assert create_admin.main(["--if-missing", "--email", "other@example.com"]) == 0
     assert list(db.scalars(select(User.email))) == ["boot@example.com"]
+
+
+def test_seed_if_empty_only_seeds_empty_database(db):
+    from sqlalchemy import func, select
+
+    from app.models import Apartment
+    from app.scripts import seed
+
+    assert seed.main(["--if-empty"]) == 0
+    assert db.scalar(select(func.count()).select_from(Apartment)) == 3
+    # Owner deletes two demo apartments; a restart must not bring them back.
+    for apt in list(db.scalars(select(Apartment)))[:2]:
+        db.delete(apt)
+    db.commit()
+    assert seed.main(["--if-empty"]) == 0
+    assert db.scalar(select(func.count()).select_from(Apartment)) == 1

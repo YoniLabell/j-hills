@@ -132,8 +132,7 @@ def record_lead(payload: LeadCreate, request: Request, db: Session = Depends(get
         .limit(1)
     )
     if recent is not None and recent.full_name in ("", payload.full_name):
-        if payload.full_name and not recent.full_name:
-            recent.full_name = payload.full_name
+        recent.full_name = payload.full_name
         recent.channel = payload.channel
         db.commit()
         return {"id": recent.id, "created": False}

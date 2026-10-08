@@ -214,3 +214,20 @@ def test_owner_whatsapp_overrides_site_number(admin_client, client):
         admin_client.post("/api/admin/apartments", json=apartment_payload(owner_whatsapp="123")).status_code
         == 422
     )
+
+
+def test_owner_email_overrides_site_email(admin_client, client):
+    admin_client.put("/api/admin/settings", json={"email": "site@example.com"})
+    owned = admin_client.post(
+        "/api/admin/apartments", json=apartment_payload(name="Owned", owner_email=" Owner@Example.com ")
+    ).json()
+    shared = admin_client.post("/api/admin/apartments", json=apartment_payload(name="Shared")).json()
+    assert owned["owner_email"] == "Owner@example.com"
+    assert client.get(f"/api/apartments/{owned['slug']}").json()["contact_email"] == "Owner@example.com"
+    assert client.get(f"/api/apartments/{shared['slug']}").json()["contact_email"] == "site@example.com"
+    assert (
+        admin_client.post(
+            "/api/admin/apartments", json=apartment_payload(owner_email="not-an-email")
+        ).status_code
+        == 422
+    )

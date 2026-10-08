@@ -117,6 +117,7 @@ SCALAR_FIELDS = (
     "longitude",
     "google_maps_url",
     "owner_whatsapp",
+    "owner_email",
     "max_guests",
     "bedrooms",
     "beds",

@@ -65,7 +65,11 @@ def apartment_card(apartment: Apartment, locale: str, currency: str = "ILS") -> 
 
 
 def apartment_public(
-    apartment: Apartment, locale: str, currency: str = "ILS", site_whatsapp: str = ""
+    apartment: Apartment,
+    locale: str,
+    currency: str = "ILS",
+    site_whatsapp: str = "",
+    site_email: str = "",
 ) -> ApartmentPublic:
     name = localized(apartment, "name", locale)
     return ApartmentPublic(
@@ -79,6 +83,7 @@ def apartment_public(
         longitude=float(apartment.longitude) if apartment.longitude is not None else None,
         google_maps_url=apartment.google_maps_url,
         whatsapp_number=apartment.owner_whatsapp or site_whatsapp,
+        contact_email=apartment.owner_email or site_email,
         images=[image_out(i) for i in apartment.images],
         amenities=[
             AmenityOut(id=a.id, key=a.key, name=a.name(locale), icon=a.icon) for a in apartment.amenities
@@ -108,6 +113,7 @@ def apartment_admin(apartment: Apartment, export_base_url: str) -> ApartmentAdmi
         longitude=float(apartment.longitude) if apartment.longitude is not None else None,
         google_maps_url=apartment.google_maps_url,
         owner_whatsapp=apartment.owner_whatsapp,
+        owner_email=apartment.owner_email,
         max_guests=apartment.max_guests,
         bedrooms=apartment.bedrooms,
         beds=apartment.beds,

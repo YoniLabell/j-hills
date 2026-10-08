@@ -71,6 +71,7 @@ class ApartmentPublic(ApartmentCard):
     longitude: float | None
     google_maps_url: str
     whatsapp_number: str
+    contact_email: str
     images: list[ImageOut]
     amenities: list[AmenityOut]
     seo_title: str
@@ -99,6 +100,7 @@ class ApartmentBase(BaseModel):
     longitude: float | None = Field(default=None, ge=-180, le=180)
     google_maps_url: str = Field(default="", max_length=1000)
     owner_whatsapp: str = Field(default="", max_length=50)
+    owner_email: str = Field(default="", max_length=255)
     max_guests: int = Field(default=2, ge=1, le=50)
     bedrooms: int = Field(default=1, ge=0, le=50)
     beds: int = Field(default=1, ge=0, le=100)
@@ -142,6 +144,18 @@ class ApartmentBase(BaseModel):
     def _owner_whatsapp(cls, v: str | None) -> str | None:
         return normalize_whatsapp(v)
 
+    @field_validator("owner_email")
+    @classmethod
+    def _owner_email(cls, v: str | None) -> str | None:
+        if not v or not v.strip():
+            return "" if v is not None else None
+        from email_validator import EmailNotValidError, validate_email
+
+        try:
+            return validate_email(v.strip(), check_deliverability=False).normalized
+        except EmailNotValidError as exc:
+            raise ValueError("Invalid email address.") from exc
+
     @field_validator("translations")
     @classmethod
     def _locales(cls, v: dict[str, TranslationIn]) -> dict[str, TranslationIn]:
@@ -166,6 +180,7 @@ class ApartmentUpdate(ApartmentBase):
     address: str | None = None  # type: ignore[assignment]
     google_maps_url: str | None = None  # type: ignore[assignment]
     owner_whatsapp: str | None = None  # type: ignore[assignment]
+    owner_email: str | None = None  # type: ignore[assignment]
     max_guests: int | None = Field(default=None, ge=1, le=50)  # type: ignore[assignment]
     bedrooms: int | None = Field(default=None, ge=0, le=50)  # type: ignore[assignment]
     beds: int | None = Field(default=None, ge=0, le=100)  # type: ignore[assignment]
@@ -217,6 +232,7 @@ class ApartmentAdminOut(BaseModel):
     longitude: float | None
     google_maps_url: str
     owner_whatsapp: str
+    owner_email: str
     max_guests: int
     bedrooms: int
     beds: int

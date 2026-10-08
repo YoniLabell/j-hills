@@ -149,6 +149,8 @@ const he: Dictionary = {
     sendEmail: "שלחו לנו מייל",
     openedEmail: "תוכנת המייל נפתחה עם הפרטים — רק ללחוץ שלח.",
     emailSubject: "בקשת הזמנה: {apartment}",
+    nameRequired: "השם שלכם",
+    nameMissing: "נא להזין שם, כדי שהמארח ידע מי פונה.",
     whatsappAfterSent: "לתשובה מהירה יותר, שלחו את הפרטים גם בוואטסאפ:",
     estimate: "סה״כ משוער",
   },

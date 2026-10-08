@@ -91,6 +91,7 @@ export default function BookingWidget({
   const [fullName, setFullName] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [opened, setOpened] = useState<"whatsapp" | "email" | null>(null);
+  const [nameError, setNameError] = useState(false);
   const twoMonths = useIsWide();
 
   const isNightFree = useCallback((d: Date) => d >= today && !!blocked && !blocked.has(toDay(d)), [blocked, today]);
@@ -177,6 +178,9 @@ export default function BookingWidget({
   const mailHref = email
     ? `mailto:${email}?subject=${encodeURIComponent(t(b.emailSubject, { apartment: apartment.name }))}&body=${encodeURIComponent(messageText)}`
     : null;
+
+  // The guest's name is required before contacting the owner.
+  const nameOk = fullName.trim().length >= 2;
 
   /** Record the contact in the admin without delaying WhatsApp/email from opening. */
   function recordLead(channel: "whatsapp" | "email") {
@@ -271,8 +275,27 @@ export default function BookingWidget({
           </select>
         </div>
         <div>
-          <label htmlFor="bw-name" className="mb-1 block text-sm font-medium">{b.nameOptional}</label>
-          <input id="bw-name" maxLength={200} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={input} />
+          <label htmlFor="bw-name" className="mb-1 block text-sm font-medium">
+            {b.nameRequired} <span className="text-terracotta-600" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="bw-name"
+            required
+            minLength={2}
+            maxLength={200}
+            autoComplete="name"
+            value={fullName}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              if (e.target.value.trim().length >= 2) setNameError(false);
+            }}
+            aria-invalid={nameError}
+            aria-describedby={nameError ? "bw-name-error" : undefined}
+            className={`${input} ${nameError ? "border-terracotta-500 ring-2 ring-terracotta-500/20" : ""}`}
+          />
+          {nameError && (
+            <p id="bw-name-error" role="alert" className="mt-1 text-sm text-terracotta-600">{b.nameMissing}</p>
+          )}
         </div>
         {/* Honeypot: hidden from people, tempting for bots. */}
         <div aria-hidden="true" className="absolute -start-[9999px] h-0 w-0 overflow-hidden">
@@ -285,8 +308,16 @@ export default function BookingWidget({
             href={waHref}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => recordLead("whatsapp")}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-lg font-semibold text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]"
+            onClick={(e) => {
+              if (!nameOk) {
+                e.preventDefault();
+                setNameError(true);
+                document.getElementById("bw-name")?.focus();
+                return;
+              }
+              recordLead("whatsapp");
+            }}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-lg font-semibold ${nameOk ? "" : "opacity-60"} text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]`}
           >
             <WhatsAppIcon className="h-5 w-5" /> {b.bookWhatsapp}
           </a>
@@ -301,7 +332,19 @@ export default function BookingWidget({
         {mailHref && (
           <p className="border-t border-ink-900/10 pt-3 text-center text-sm text-ink-700">
             {b.noWhatsapp}{" "}
-            <a href={mailHref} onClick={() => recordLead("email")} className="inline-flex items-center gap-1 font-semibold text-gold-700 underline-offset-4 hover:underline">
+            <a
+              href={mailHref}
+              onClick={(e) => {
+                if (!nameOk) {
+                  e.preventDefault();
+                  setNameError(true);
+                  document.getElementById("bw-name")?.focus();
+                  return;
+                }
+                recordLead("email");
+              }}
+              className="inline-flex items-center gap-1 font-semibold text-gold-700 underline-offset-4 hover:underline"
+            >
               <Mail className="h-4 w-4" aria-hidden="true" /> {b.sendEmail}
             </a>
           </p>

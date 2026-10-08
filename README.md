@@ -229,6 +229,7 @@ python -m app.scripts.create_admin --email you@example.com --reset   # reset a f
    - **Description:** the English texts, plus Hebrew in the **עברית** tab. An empty Hebrew field falls back to English.
    - **Capacity and pricing:** guests, bedrooms, beds, bathrooms, price per night, cleaning fee, minimum nights, check-in and check-out times.
    - **Owner WhatsApp:** the apartment owner's WhatsApp number. The **Send details on WhatsApp** button on the apartment page opens WhatsApp with a ready message to this number: apartment, dates, nights, guests, estimated total, the guest's name and message, and a link to the apartment. If empty, the general number from **Settings** is used.
+   - **Owner email:** guests without WhatsApp can email this address from the apartment page (same details). If empty, the email from **Settings** is used. The guest's name is required before WhatsApp or email opens.
    - **Location:** choose a preset neighborhood (Mamilla, City Center, Nachlaot, Rehavia, Talbiya, German Colony, Old City) or type your own. Pasting a Google Maps link fills in the coordinates automatically. The street address stays private.
    - **Amenities:** tick the checkboxes.
    - **Airbnb iCal URL**, plus the **Active** and **Featured** switches.

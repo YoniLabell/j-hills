@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import BookingWidget from "@/components/apartments/BookingWidget";
 import Gallery from "@/components/apartments/Gallery";
 import AmenityIcon from "@/components/ui/AmenityIcon";
-import { getApartment, getSettings } from "@/lib/api";
+import { getApartment } from "@/lib/api";
 import { siteUrl } from "@/lib/config";
 import { formatPrice, formatTime, isIsoDay } from "@/lib/format";
 import { imageUrl } from "@/lib/images";
@@ -46,7 +46,7 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
   const { slug } = await params;
   const sp = await searchParams;
   const { locale, dict } = await getI18n();
-  const [apt, settings] = await Promise.all([getApartment(slug, locale), getSettings()]);
+  const apt = await getApartment(slug, locale);
   if (!apt) notFound();
   const d = dict.apartment;
 
@@ -190,7 +190,7 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
               currency: apt.currency,
             }}
             whatsappNumber={apt.whatsapp_number}
-            email={settings.email}
+            email={apt.contact_email}
             pageUrl={`${siteUrl()}/apartments/${apt.slug}`}
             initialCheckIn={isIsoDay(checkIn) ? checkIn : undefined}
             initialCheckOut={isIsoDay(checkOut) ? checkOut : undefined}

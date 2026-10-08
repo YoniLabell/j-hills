@@ -148,6 +148,8 @@ const en = {
     sendEmail: "Send us an email",
     openedEmail: "Your email app opened with the details — just press Send.",
     emailSubject: "Booking inquiry: {apartment}",
+    nameRequired: "Your name",
+    nameMissing: "Please enter your name so the host knows who is writing.",
     whatsappAfterSent: "Also send the details on WhatsApp for a faster reply:",
     estimate: "Estimated total",
   },

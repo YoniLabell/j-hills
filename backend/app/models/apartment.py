@@ -45,6 +45,8 @@ class Apartment(TimestampMixin, Base):
     google_maps_url: Mapped[str] = mapped_column(String(1000), default="", nullable=False)
     # Owner's WhatsApp (digits, international format). Empty = use the site-wide number.
     owner_whatsapp: Mapped[str] = mapped_column(String(50), default="", nullable=False)
+    # Owner's email for guest inquiries. Empty = use the site-wide email.
+    owner_email: Mapped[str] = mapped_column(String(255), default="", nullable=False)
 
     max_guests: Mapped[int] = mapped_column(Integer, default=2, nullable=False)
     bedrooms: Mapped[int] = mapped_column(Integer, default=1, nullable=False)

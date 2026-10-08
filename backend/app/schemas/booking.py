@@ -37,7 +37,7 @@ class InquiryCreate(BaseModel):
 class LeadCreate(BaseModel):
     """Recorded when a guest clicks "Book on WhatsApp" / "Send an email".
 
-    Contact details aren't needed: the conversation continues in WhatsApp or email.
+    Only the guest's name is required: the conversation continues in WhatsApp or email.
     """
 
     apartment_id: int
@@ -45,14 +45,17 @@ class LeadCreate(BaseModel):
     check_out: date
     guests: int = Field(ge=1, le=50)
     channel: Literal["whatsapp", "email"]
-    full_name: str = Field(default="", max_length=200)
+    full_name: str = Field(min_length=2, max_length=200)
     locale: Literal["en", "he"] = "en"
     website: str = Field(default="", max_length=200)  # honeypot
 
     @field_validator("full_name")
     @classmethod
     def _strip_name(cls, v: str) -> str:
-        return v.strip()
+        v = v.strip()
+        if len(v) < 2:
+            raise ValueError("Please enter your name.")
+        return v
 
 
 class InquiryCreated(BaseModel):

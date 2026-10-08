@@ -45,6 +45,8 @@ export interface ApartmentDetail extends ApartmentCard {
   google_maps_url: string;
   /** Apartment owner's WhatsApp, or the site-wide number. */
   whatsapp_number: string;
+  /** Apartment owner's email, or the site-wide email. */
+  contact_email: string;
   images: ImageInfo[];
   amenities: Amenity[];
   seo_title: string;

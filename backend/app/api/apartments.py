@@ -126,7 +126,9 @@ def get_apartment(slug: str, lang: str = "en", db: Session = Depends(get_db)):
     if apt is None:
         raise HTTPException(status_code=404, detail="Apartment not found.")
     site = get_site_settings(db)
-    return apartment_public(apt, normalize_locale(lang), site.default_currency, site.whatsapp_number)
+    return apartment_public(
+        apt, normalize_locale(lang), site.default_currency, site.whatsapp_number, site.email
+    )
 
 
 @router.get("/apartments/{apartment_id}/quote")

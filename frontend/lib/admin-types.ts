@@ -33,6 +33,8 @@ export interface AdminApartment {
   google_maps_url: string;
   owner_whatsapp: string;
   owner_email: string;
+  rating: number | null;
+  reviews_count: number | null;
   max_guests: number;
   bedrooms: number;
   beds: number;

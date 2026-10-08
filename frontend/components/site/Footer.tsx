@@ -32,7 +32,7 @@ export default function Footer({
           </p>
         </div>
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400">{dict.footer.explore}</h2>
+          <h2 className="text-xs font-semibold text-gold-400">{dict.footer.explore}</h2>
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link href="/" className="hover:text-white">{dict.nav.home}</Link></li>
             <li><Link href="/apartments" className="hover:text-white">{dict.nav.apartments}</Link></li>
@@ -40,7 +40,7 @@ export default function Footer({
           </ul>
         </div>
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400">{dict.footer.contact}</h2>
+          <h2 className="text-xs font-semibold text-gold-400">{dict.footer.contact}</h2>
           <ul className="mt-4 space-y-2 text-sm">
             {wa && (
               <li>

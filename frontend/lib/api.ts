@@ -52,6 +52,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   about_text_he: "",
   footer_text_en: "",
   footer_text_he: "",
+  rating: null,
+  reviews_count: null,
+  host_since_year: null,
 };
 
 export async function getSettings(): Promise<SiteSettings> {

@@ -75,6 +75,20 @@ export default function SettingsPage() {
             <Field label="Facebook URL"><input type="url" className={inputClass} {...f("facebook_url")} /></Field>
           </div>
         </Card>
+        <Card title="Trust figures (homepage)">
+          <p className="mb-3 text-sm text-ink-500">Optional. Use your real figures, for example from your Airbnb host profile. Empty fields are hidden on the site.</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Overall rating (0–5)">
+              <input type="number" min={0} max={5} step={0.01} className={inputClass} value={s.rating ?? ""} onChange={(e) => setS({ ...s, rating: e.target.value === "" ? null : Number(e.target.value) })} />
+            </Field>
+            <Field label="Number of reviews">
+              <input type="number" min={0} step={1} className={inputClass} value={s.reviews_count ?? ""} onChange={(e) => setS({ ...s, reviews_count: e.target.value === "" ? null : Number(e.target.value) })} />
+            </Field>
+            <Field label="Hosting since (year)">
+              <input type="number" min={1990} max={2100} step={1} className={inputClass} value={s.host_since_year ?? ""} onChange={(e) => setS({ ...s, host_since_year: e.target.value === "" ? null : Number(e.target.value) })} />
+            </Field>
+          </div>
+        </Card>
         <Card title="Texts">
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="About text (English)"><textarea rows={5} className={inputClass} {...f("about_text_en")} /></Field>

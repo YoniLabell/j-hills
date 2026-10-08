@@ -59,7 +59,7 @@ export default async function ApartmentsPage({ searchParams }: { searchParams: S
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-8">
-        <h1 className="font-serif text-4xl sm:text-5xl">{dict.apartments.title}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{dict.apartments.title}</h1>
         <p className="mt-2 text-ink-700">
           {hasDates
             ? t(dict.apartments.resultsFor, {

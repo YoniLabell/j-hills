@@ -11,10 +11,9 @@ const en = {
     close: "Close",
   },
   hero: {
-    eyebrow: "Boutique vacation apartments",
-    title: "Stay in the Heart of Jerusalem",
-    subtitle:
-      "Stone-walled homes in Mamilla, Nachlaot and the city center — hosted personally, booked directly with us.",
+    eyebrow: "Vacation apartments in Jerusalem",
+    title: "Jerusalem vacation apartments, booked directly",
+    subtitle: "The same apartments as on Airbnb, without the service fee. Check availability and book on WhatsApp.",
   },
   search: {
     checkIn: "Check-in",
@@ -36,6 +35,16 @@ const en = {
     featuredTitle: "Featured apartments",
     featuredSubtitle: "A small collection of homes we know and love.",
     viewAll: "View all apartments",
+    trustReviews: "{n} reviews on Airbnb",
+    trustNoFees: "No booking fees",
+    trustNoPrepay: "No prepayment",
+    trustHostSince: "Hosting since {year}",
+    stepsTitle: "How to book",
+    steps: [
+      { title: "Step 1", text: "Choose an apartment and dates and see the full price right away." },
+      { title: "Step 2", text: "Tap “Book on WhatsApp” and the message goes out with all the details." },
+      { title: "Step 3", text: "The host confirms, usually within the hour. No payment in advance." },
+    ],
     whyTitle: "Why book directly with us",
     why: [
       { title: "Best price, no platform fees", text: "Booking directly means no service fees added on top of the nightly rate." },
@@ -84,6 +93,8 @@ const en = {
     bathroomShort: "1 bath",
     view: "View apartment",
     featured: "Featured",
+    reviews: "({n})",
+    reviewsLong: "{n} reviews",
   },
   apartment: {
     back: "All apartments",
@@ -152,6 +163,7 @@ const en = {
     nameMissing: "Please enter your name so the host knows who is writing.",
     whatsappAfterSent: "Also send the details on WhatsApp for a faster reply:",
     estimate: "Estimated total",
+    serviceFee: "Service fee",
   },
   footer: {
     rights: "All rights reserved.",

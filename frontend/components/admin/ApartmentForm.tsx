@@ -22,6 +22,8 @@ type FormState = {
   google_maps_url: string;
   owner_whatsapp: string;
   owner_email: string;
+  rating: string;
+  reviews_count: string;
   max_guests: string;
   bedrooms: string;
   beds: string;
@@ -58,6 +60,8 @@ function toForm(a?: AdminApartment): FormState {
     google_maps_url: a?.google_maps_url ?? "",
     owner_whatsapp: a?.owner_whatsapp ?? "",
     owner_email: a?.owner_email ?? "",
+    rating: a?.rating?.toString() ?? "",
+    reviews_count: a?.reviews_count?.toString() ?? "",
     max_guests: String(a?.max_guests ?? 2),
     bedrooms: String(a?.bedrooms ?? 1),
     beds: String(a?.beds ?? 1),
@@ -127,6 +131,8 @@ export default function ApartmentForm({ apartment, onSaved }: { apartment?: Admi
       google_maps_url: form.google_maps_url.trim(),
       owner_whatsapp: form.owner_whatsapp.trim(),
       owner_email: form.owner_email.trim(),
+      rating: num(form.rating),
+      reviews_count: num(form.reviews_count),
       max_guests: Number(form.max_guests),
       bedrooms: Number(form.bedrooms),
       beds: Number(form.beds),
@@ -269,6 +275,14 @@ export default function ApartmentForm({ apartment, onSaved }: { apartment?: Admi
         >
           <input type="email" dir="ltr" maxLength={255} className={inputClass} {...text("owner_email")} placeholder="owner@example.com" />
         </Field>
+        </div>
+      </Card>
+
+      <Card title="Guest rating">
+        <p className="mb-3 text-sm text-ink-500">Optional. Copy the rating from this apartment’s Airbnb listing. Shown on the apartment card and page; leave empty to hide it.</p>
+        <div className="grid grid-cols-2 gap-4 md:max-w-md">
+          <Field label="Rating (0–5)"><input type="number" min={0} max={5} step={0.01} className={inputClass} {...text("rating")} placeholder="4.95" /></Field>
+          <Field label="Number of reviews"><input type="number" min={0} step={1} className={inputClass} {...text("reviews_count")} placeholder="88" /></Field>
         </div>
       </Card>
 

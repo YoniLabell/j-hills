@@ -1,27 +1,32 @@
 @import "tailwindcss";
 
+/* Direction 3, "clean and transparent": white and cool greys with one teal brand colour.
+   Token names are kept from the first design so every component re-themes at once:
+   sand = neutral surfaces, gold/olive = brand teal, ink = text, terracotta = errors. */
 @theme {
-  --color-sand-50: #fcfaf6;
-  --color-sand-100: #f6f0e6;
-  --color-sand-200: #ece2d1;
-  --color-sand-300: #dfcdb1;
-  --color-sand-400: #cdb38c;
-  --color-gold-400: #c9a46a;
-  --color-gold-500: #b08d57;
-  --color-gold-600: #94733f;
-  --color-gold-700: #765a31;
-  --color-olive-600: #5d6b4b;
-  --color-olive-700: #4a573b;
-  --color-olive-800: #374130;
-  --color-ink-900: #1e211d;
-  --color-ink-800: #2c302a;
-  --color-ink-700: #444a42;
-  --color-ink-500: #6d7369;
-  --color-terracotta-500: #c0664a;
-  --color-terracotta-600: #a4523a;
+  --color-sand-50: #ffffff;
+  --color-sand-100: #f6f8f9;
+  --color-sand-200: #e8edf0;
+  --color-sand-300: #d5dde2;
+  --color-sand-400: #b8c4cc;
+  --color-gold-400: #5eb8ad;
+  --color-gold-500: #14998b;
+  --color-gold-600: #0f857a;
+  --color-gold-700: #0f766e;
+  --color-olive-600: #138377;
+  --color-olive-700: #0f766e;
+  --color-olive-800: #0b5d56;
+  --color-ink-900: #17212b;
+  --color-ink-800: #2d3b46;
+  --color-ink-700: #46535e;
+  --color-ink-500: #6b7882;
+  --color-terracotta-500: #d0573c;
+  --color-terracotta-600: #b5432b;
+  --color-star: #e4a11b;
+  --color-mint: #effaf8;
 
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-display), ui-serif, Georgia, serif;
+  --font-serif: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -30,6 +35,12 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Headings use the same family as body text, heavier and slightly tighter. */
+.font-serif {
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 body {
@@ -42,16 +53,10 @@ body {
 /* Subtle Jerusalem-stone texture used on section backgrounds. */
 .stone-texture {
   background-color: var(--color-sand-100);
-  background-image:
-    radial-gradient(circle at 20% 30%, rgba(176, 141, 87, 0.06) 0 2px, transparent 3px),
-    radial-gradient(circle at 70% 60%, rgba(176, 141, 87, 0.05) 0 1.5px, transparent 2.5px),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
-  background-size: 38px 38px, 27px 27px, auto;
 }
 
 .arch {
-  border-start-start-radius: 999px;
-  border-start-end-radius: 999px;
+  border-radius: 10px;
 }
 
 /* ------------------------------------------------------------ DayPicker theme */
@@ -77,11 +82,11 @@ html .rdp-months {
 }
 .rdp-day.booked:not(.rdp-disabled) .rdp-day_button {
   /* checkout-only day: next night is booked */
-  background: linear-gradient(135deg, transparent 50%, rgba(192, 102, 74, 0.12) 50%);
+  background: linear-gradient(135deg, transparent 50%, rgba(208, 87, 60, 0.12) 50%);
 }
 .rdp-month_caption {
-  font-family: var(--font-serif);
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 1.05rem;
 }
 .admin-calendar .rdp-day.src-airbnb .rdp-day_button {
   background: #fde2dc;

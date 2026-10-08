@@ -22,6 +22,9 @@ class SiteSettingsOut(ORMModel):
     about_text_he: str
     footer_text_en: str
     footer_text_he: str
+    rating: float | None = None
+    reviews_count: int | None = None
+    host_since_year: int | None = None
 
 
 class SiteSettingsUpdate(BaseModel):
@@ -39,6 +42,9 @@ class SiteSettingsUpdate(BaseModel):
     about_text_he: str | None = Field(default=None, max_length=10000)
     footer_text_en: str | None = Field(default=None, max_length=2000)
     footer_text_he: str | None = Field(default=None, max_length=2000)
+    rating: float | None = Field(default=None, ge=0, le=5)
+    reviews_count: int | None = Field(default=None, ge=0, le=1_000_000)
+    host_since_year: int | None = Field(default=None, ge=1990, le=2100)
 
     @field_validator("default_currency")
     @classmethod

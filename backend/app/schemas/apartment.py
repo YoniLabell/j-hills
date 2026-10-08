@@ -59,6 +59,10 @@ class ApartmentCard(BaseModel):
     currency: str
     featured: bool
     cover_image: ImageOut | None
+    rating: float | None = None
+    reviews_count: int | None = None
+    # A few amenity names for the card (localized).
+    highlights: list[str] = []
 
 
 class ApartmentPublic(ApartmentCard):
@@ -101,6 +105,8 @@ class ApartmentBase(BaseModel):
     google_maps_url: str = Field(default="", max_length=1000)
     owner_whatsapp: str = Field(default="", max_length=50)
     owner_email: str = Field(default="", max_length=255)
+    rating: float | None = Field(default=None, ge=0, le=5)
+    reviews_count: int | None = Field(default=None, ge=0, le=1_000_000)
     max_guests: int = Field(default=2, ge=1, le=50)
     bedrooms: int = Field(default=1, ge=0, le=50)
     beds: int = Field(default=1, ge=0, le=100)
@@ -233,6 +239,8 @@ class ApartmentAdminOut(BaseModel):
     google_maps_url: str
     owner_whatsapp: str
     owner_email: str
+    rating: float | None
+    reviews_count: int | None
     max_guests: int
     bedrooms: int
     beds: int

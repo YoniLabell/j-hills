@@ -231,3 +231,26 @@ def test_owner_email_overrides_site_email(admin_client, client):
         ).status_code
         == 422
     )
+
+
+def test_ratings_highlights_and_trust_settings(admin_client, client, amenities):
+    apt = admin_client.post(
+        "/api/admin/apartments",
+        json=apartment_payload(rating=4.97, reviews_count=88, amenity_ids=[a.id for a in amenities]),
+    ).json()
+    card = client.get("/api/apartments", params={"lang": "he"}).json()[0]
+    assert card["rating"] == 4.97 and card["reviews_count"] == 88
+    assert card["highlights"] == ["אינטרנט אלחוטי", "מטבח"]
+    # Clearing the rating hides it.
+    admin_client.put(f"/api/admin/apartments/{apt['id']}", json={"rating": None, "reviews_count": None})
+    assert client.get("/api/apartments").json()[0]["rating"] is None
+    assert admin_client.post("/api/admin/apartments", json=apartment_payload(rating=6)).status_code == 422
+
+    r = admin_client.put(
+        "/api/admin/settings", json={"rating": 4.9, "reviews_count": 214, "host_since_year": 2018}
+    )
+    assert r.json()["host_since_year"] == 2018
+    assert client.get("/api/settings").json()["rating"] == 4.9
+    admin_client.put("/api/admin/settings", json={"rating": None})
+    assert client.get("/api/settings").json()["rating"] is None
+    assert client.get("/api/settings").json()["reviews_count"] == 214

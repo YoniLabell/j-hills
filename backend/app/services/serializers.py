@@ -57,6 +57,9 @@ def _card_fields(apartment: Apartment, locale: str, currency: str) -> dict:
         currency=currency,
         featured=apartment.featured,
         cover_image=image_out(cover) if cover else None,
+        rating=float(apartment.rating) if apartment.rating is not None else None,
+        reviews_count=apartment.reviews_count,
+        highlights=[a.name(locale) for a in apartment.amenities[:3]],
     )
 
 
@@ -114,6 +117,8 @@ def apartment_admin(apartment: Apartment, export_base_url: str) -> ApartmentAdmi
         google_maps_url=apartment.google_maps_url,
         owner_whatsapp=apartment.owner_whatsapp,
         owner_email=apartment.owner_email,
+        rating=float(apartment.rating) if apartment.rating is not None else None,
+        reviews_count=apartment.reviews_count,
         max_guests=apartment.max_guests,
         bedrooms=apartment.bedrooms,
         beds=apartment.beds,

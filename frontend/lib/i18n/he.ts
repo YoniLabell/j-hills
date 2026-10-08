@@ -13,9 +13,9 @@ const he: Dictionary = {
     close: "סגירה",
   },
   hero: {
-    eyebrow: "דירות נופש בוטיק",
-    title: "שהות בלב ירושלים",
-    subtitle: "בתים מאבן ירושלמית בממילא, בנחלאות ובמרכז העיר — באירוח אישי, בהזמנה ישירה מאיתנו.",
+    eyebrow: "דירות נופש בירושלים",
+    title: "דירות נופש בירושלים, בהזמנה ישירה",
+    subtitle: "אותן דירות כמו ב-Airbnb, בלי עמלת שירות. בודקים זמינות ומזמינים בוואטסאפ.",
   },
   search: {
     checkIn: "צ׳ק-אין",
@@ -37,6 +37,16 @@ const he: Dictionary = {
     featuredTitle: "דירות נבחרות",
     featuredSubtitle: "אוסף קטן של בתים שאנחנו מכירים ואוהבים.",
     viewAll: "לכל הדירות",
+    trustReviews: "{n} ביקורות ב-Airbnb",
+    trustNoFees: "ללא עמלות הזמנה",
+    trustNoPrepay: "אין תשלום מראש",
+    trustHostSince: "מארחים מאז {year}",
+    stepsTitle: "איך מזמינים",
+    steps: [
+      { title: "שלב 1", text: "בוחרים דירה ותאריכים ורואים מיד את המחיר המלא." },
+      { title: "שלב 2", text: "לוחצים ״הזמנה בוואטסאפ״, וההודעה נשלחת עם כל הפרטים." },
+      { title: "שלב 3", text: "המארח מאשר, בדרך כלל תוך שעה. אין תשלום מראש." },
+    ],
     whyTitle: "למה להזמין ישירות אצלנו",
     why: [
       { title: "המחיר הטוב ביותר, בלי עמלות", text: "בהזמנה ישירה אין דמי שירות שמתווספים למחיר הלילה." },
@@ -85,6 +95,8 @@ const he: Dictionary = {
     bathroomShort: "חדר רחצה אחד",
     view: "לפרטי הדירה",
     featured: "מומלץ",
+    reviews: "({n})",
+    reviewsLong: "{n} ביקורות",
   },
   apartment: {
     back: "כל הדירות",
@@ -153,6 +165,7 @@ const he: Dictionary = {
     nameMissing: "נא להזין שם, כדי שהמארח ידע מי פונה.",
     whatsappAfterSent: "לתשובה מהירה יותר, שלחו את הפרטים גם בוואטסאפ:",
     estimate: "סה״כ משוער",
+    serviceFee: "עמלת שירות",
   },
   footer: {
     rights: "כל הזכויות שמורות.",

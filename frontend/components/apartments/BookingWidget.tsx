@@ -197,11 +197,11 @@ export default function BookingWidget({
   const input = "w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-400/30";
 
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-xl shadow-ink-900/5 ring-1 ring-ink-900/5 sm:p-6">
+    <div className="rounded-3xl bg-white p-5 shadow-xl shadow-ink-900/5 border border-sand-200 sm:p-6">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="font-serif text-2xl">{b.title}</h2>
+        <h2 className="text-xl font-extrabold">{b.title}</h2>
         <p>
-          <span className="text-xl font-semibold">{money(apartment.price_per_night)}</span>{" "}
+          <span className="text-xl font-extrabold">{money(apartment.price_per_night)}</span>{" "}
           <span className="text-sm text-ink-500">{dict.apartments.perNight}</span>
         </p>
       </div>
@@ -246,11 +246,11 @@ export default function BookingWidget({
 
       <dl className="mt-4 grid grid-cols-2 overflow-hidden rounded-2xl border border-ink-900/10 text-sm">
         <div className="border-e border-ink-900/10 p-3">
-          <dt className="text-xs font-semibold uppercase tracking-wider text-ink-500">{dict.search.checkIn}</dt>
+          <dt className="text-xs font-semibold text-ink-500">{dict.search.checkIn}</dt>
           <dd className="mt-0.5 font-medium">{checkIn ? formatDate(checkIn, locale) : "—"}</dd>
         </div>
         <div className="p-3">
-          <dt className="text-xs font-semibold uppercase tracking-wider text-ink-500">{dict.search.checkOut}</dt>
+          <dt className="text-xs font-semibold text-ink-500">{dict.search.checkOut}</dt>
           <dd className="mt-0.5 font-medium">{checkOut ? formatDate(checkOut, locale) : "—"}</dd>
         </div>
       </dl>
@@ -261,6 +261,8 @@ export default function BookingWidget({
         <dl className="mt-4 space-y-1.5 text-sm">
           <div className="flex justify-between"><dt>{t(b.nightsTimesRate, { rate: money(apartment.price_per_night), n: nights })}</dt><dd>{money(accommodation)}</dd></div>
           {apartment.cleaning_fee > 0 && <div className="flex justify-between"><dt>{dict.apartment.cleaningFee}</dt><dd>{money(apartment.cleaning_fee)}</dd></div>}
+          {/* Direct bookings carry no platform fee: show it explicitly, that's the point of booking here. */}
+          <div className="flex justify-between"><dt>{b.serviceFee}</dt><dd className="font-bold text-gold-700">{money(0)}</dd></div>
           <div className="flex justify-between border-t border-ink-900/10 pt-2 text-base font-semibold"><dt>{b.total}</dt><dd>{money(total)}</dd></div>
         </dl>
       )}

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Frank_Ruhl_Libre, Heebo } from "next/font/google";
+import { Heebo } from "next/font/google";
 
 import { getSettings } from "@/lib/api";
 import { siteUrl } from "@/lib/config";
@@ -11,16 +11,11 @@ import "./globals.css";
 // Every page depends on the visitor’s language cookie and live availability.
 export const dynamic = "force-dynamic";
 
-// Both families cover Latin and Hebrew, so the design stays consistent in either language.
-const display = Frank_Ruhl_Libre({
-  variable: "--font-display",
-  subsets: ["latin", "hebrew"],
-  weight: ["400", "500", "700"],
-  display: "swap",
-});
+// Heebo covers Latin and Hebrew, so both languages share one consistent typeface.
 const body = Heebo({
   variable: "--font-body",
   subsets: ["latin", "hebrew"],
+  weight: ["300", "400", "500", "700", "800"],
   display: "swap",
 });
 
@@ -37,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#f6f0e6",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
 };
@@ -45,7 +40,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, dict } = await getI18n();
   return (
-    <html lang={locale} dir={dict.dir} className={`${display.variable} ${body.variable} h-full`}>
+    <html lang={locale} dir={dict.dir} className={`${body.variable} h-full`}>
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>

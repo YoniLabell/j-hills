@@ -118,6 +118,8 @@ SCALAR_FIELDS = (
     "google_maps_url",
     "owner_whatsapp",
     "owner_email",
+    "rating",
+    "reviews_count",
     "max_guests",
     "bedrooms",
     "beds",
@@ -135,7 +137,7 @@ SCALAR_FIELDS = (
     "sort_order",
 )
 
-NULLABLE_FIELDS = {"latitude", "longitude"}
+NULLABLE_FIELDS = {"latitude", "longitude", "rating", "reviews_count"}
 
 
 def _fill_coords_from_maps_url(apt: Apartment, url_changed: bool) -> None:

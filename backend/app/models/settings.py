@@ -1,4 +1,6 @@
-from sqlalchemy import Integer, String, Text
+from decimal import Decimal
+
+from sqlalchemy import Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
@@ -27,3 +29,7 @@ class SiteSettings(TimestampMixin, Base):
     about_text_he: Mapped[str] = mapped_column(Text, default="", nullable=False)
     footer_text_en: Mapped[str] = mapped_column(Text, default="", nullable=False)
     footer_text_he: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    # Optional trust figures for the homepage. Hidden on the site when empty.
+    rating: Mapped[Decimal | None] = mapped_column(Numeric(3, 2))
+    reviews_count: Mapped[int | None] = mapped_column(Integer)
+    host_since_year: Mapped[int | None] = mapped_column(Integer)

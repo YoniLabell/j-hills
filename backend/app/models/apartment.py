@@ -47,6 +47,9 @@ class Apartment(TimestampMixin, Base):
     owner_whatsapp: Mapped[str] = mapped_column(String(50), default="", nullable=False)
     # Owner's email for guest inquiries. Empty = use the site-wide email.
     owner_email: Mapped[str] = mapped_column(String(255), default="", nullable=False)
+    # Optional guest rating shown on the site (e.g. copied from the Airbnb listing).
+    rating: Mapped[Decimal | None] = mapped_column(Numeric(3, 2))
+    reviews_count: Mapped[int | None] = mapped_column(Integer)
 
     max_guests: Mapped[int] = mapped_column(Integer, default=2, nullable=False)
     bedrooms: Mapped[int] = mapped_column(Integer, default=1, nullable=False)

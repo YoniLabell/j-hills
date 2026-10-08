@@ -32,6 +32,10 @@ export interface ApartmentCard {
   currency: string;
   featured: boolean;
   cover_image: ImageInfo | null;
+  rating: number | null;
+  reviews_count: number | null;
+  /** A few localized amenity names for the card. */
+  highlights: string[];
 }
 
 export interface ApartmentDetail extends ApartmentCard {
@@ -69,6 +73,9 @@ export interface SiteSettings {
   about_text_he: string;
   footer_text_en: string;
   footer_text_he: string;
+  rating: number | null;
+  reviews_count: number | null;
+  host_since_year: number | null;
 }
 
 export interface Neighborhood {

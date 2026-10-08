@@ -198,8 +198,9 @@ def get_admin_settings(db: Session = Depends(get_db)):
 @router.put("/settings", response_model=SiteSettingsOut)
 def update_settings(payload: SiteSettingsUpdate, db: Session = Depends(get_db)):
     s = get_site_settings(db)
+    clearable = {"rating", "reviews_count", "host_since_year"}
     for field, value in payload.model_dump(exclude_unset=True).items():
-        if value is not None:
+        if value is not None or field in clearable:
             setattr(s, field, value)
     db.commit()
     return _settings_out(db)

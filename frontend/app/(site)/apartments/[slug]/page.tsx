@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import BookingWidget from "@/components/apartments/BookingWidget";
 import Gallery from "@/components/apartments/Gallery";
 import AmenityIcon from "@/components/ui/AmenityIcon";
+import Rating from "@/components/ui/Rating";
 import { getApartment } from "@/lib/api";
 import { siteUrl } from "@/lib/config";
 import { formatPrice, formatTime, isIsoDay } from "@/lib/format";
@@ -86,10 +87,15 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
       </Link>
 
       <header className="mt-4">
-        <p className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-gold-600">
+        <p className="flex items-center gap-1.5 text-sm font-semibold text-gold-600">
           <MapPin className="h-4 w-4" aria-hidden="true" /> {apt.neighborhood}
         </p>
-        <h1 className="mt-1 font-serif text-4xl leading-tight sm:text-5xl">{apt.name}</h1>
+        <h1 className="mt-1 text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">{apt.name}</h1>
+        {apt.rating != null && (
+          <p className="mt-1 text-sm text-ink-700">
+            <Rating value={apt.rating} count={apt.reviews_count} countLabel={`· ${dict.apartments.reviewsLong}`} />
+          </p>
+        )}
         <p className="mt-2 max-w-3xl text-lg text-ink-700">{apt.short_description}</p>
       </header>
 
@@ -101,16 +107,16 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
         <div className="min-w-0 space-y-12">
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {facts.map((f) => (
-              <li key={f.label} className="rounded-2xl bg-white p-4 text-center ring-1 ring-ink-900/5">
+              <li key={f.label} className="rounded-2xl bg-white p-4 text-center border border-sand-200">
                 <f.icon className="mx-auto h-6 w-6 text-gold-600" aria-hidden="true" />
                 <p className="mt-2 text-2xl font-semibold">{f.value}</p>
-                <p className="text-xs uppercase tracking-wider text-ink-500">{f.label}</p>
+                <p className="text-xs text-ink-500">{f.label}</p>
               </li>
             ))}
           </ul>
 
           <section aria-labelledby="overview">
-            <h2 id="overview" className="font-serif text-3xl">{d.overview}</h2>
+            <h2 id="overview" className="text-2xl font-extrabold">{d.overview}</h2>
             <div className="mt-4 space-y-4 whitespace-pre-line leading-relaxed text-ink-800">{apt.description}</div>
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm">
               <div className="flex gap-2"><dt className="font-semibold">{formatPrice(apt.price_per_night, apt.currency, locale)}</dt><dd className="text-ink-500">{dict.apartments.perNight}</dd></div>
@@ -123,7 +129,7 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
 
           {apt.amenities.length > 0 && (
             <section aria-labelledby="amenities">
-              <h2 id="amenities" className="font-serif text-3xl">{d.amenities}</h2>
+              <h2 id="amenities" className="text-2xl font-extrabold">{d.amenities}</h2>
               <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {apt.amenities.map((a) => (
                   <li key={a.id} className="flex items-center gap-3 border-b border-ink-900/5 py-2">
@@ -137,7 +143,7 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
 
           <section aria-labelledby="rules" className="grid gap-8 sm:grid-cols-2">
             <div>
-              <h2 id="rules" className="font-serif text-3xl">{d.houseRules}</h2>
+              <h2 id="rules" className="text-2xl font-extrabold">{d.houseRules}</h2>
               <ul className="mt-4 space-y-2 text-ink-800">
                 {apt.house_rules
                   .split("\n")
@@ -149,20 +155,20 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
               </ul>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-ink-900/5">
+              <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-sand-200">
                 <Clock className="h-6 w-6 text-gold-600" aria-hidden="true" />
-                <div><p className="text-xs uppercase tracking-wider text-ink-500">{d.checkIn}</p><p className="font-semibold">{t(d.after, { t: formatTime(apt.check_in_time) })}</p></div>
+                <div><p className="text-xs text-ink-500">{d.checkIn}</p><p className="font-semibold">{t(d.after, { t: formatTime(apt.check_in_time) })}</p></div>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-ink-900/5">
+              <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-sand-200">
                 <Clock className="h-6 w-6 text-gold-600" aria-hidden="true" />
-                <div><p className="text-xs uppercase tracking-wider text-ink-500">{d.checkOut}</p><p className="font-semibold">{t(d.before, { t: formatTime(apt.check_out_time) })}</p></div>
+                <div><p className="text-xs text-ink-500">{d.checkOut}</p><p className="font-semibold">{t(d.before, { t: formatTime(apt.check_out_time) })}</p></div>
               </div>
             </div>
           </section>
 
           {(mapEmbed || mapLink) && (
             <section aria-labelledby="location">
-              <h2 id="location" className="font-serif text-3xl">{d.location}</h2>
+              <h2 id="location" className="text-2xl font-extrabold">{d.location}</h2>
               {mapEmbed && (
                 <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-ink-900/10">
                   <iframe title={`${d.location} – ${apt.name}`} src={mapEmbed} className="h-80 w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />

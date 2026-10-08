@@ -10,12 +10,13 @@ import { formatDate, formatPrice, nightsBetween, parseDay, toDay } from "@/lib/f
 import { t } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/client";
 import type { Availability } from "@/lib/types";
-import { inquiryMessage, whatsappLink } from "@/lib/whatsapp";
+import { bookingWhatsAppMessage, whatsappLink } from "@/lib/whatsapp";
 
 import { WhatsAppIcon } from "../ui/BrandIcons";
 
 type Apt = {
   id: number;
+  slug: string;
   name: string;
   max_guests: number;
   min_nights: number;
@@ -59,12 +60,15 @@ function useIsWide() {
 export default function BookingWidget({
   apartment,
   whatsappNumber,
+  pageUrl,
   initialCheckIn,
   initialCheckOut,
   initialGuests,
 }: {
   apartment: Apt;
+  /** The apartment owner's WhatsApp (or the site-wide number). */
   whatsappNumber: string;
+  pageUrl: string;
   initialCheckIn?: string;
   initialCheckOut?: string;
   initialGuests?: number;
@@ -164,10 +168,32 @@ export default function BookingWidget({
   const total = nights ? accommodation + apartment.cleaning_fee : 0;
   const money = (n: number) => formatPrice(n, apartment.currency, locale);
 
+  // Everything the visitor has entered so far goes into the WhatsApp message.
   const waHref = whatsappLink(
     whatsappNumber,
-    inquiryMessage(locale, { apartment: apartment.name, checkIn, checkOut, guests }),
+    bookingWhatsAppMessage(locale, {
+      apartment: apartment.name,
+      checkIn,
+      checkOut: checkIn ? checkOut : undefined,
+      nights: tooShort ? undefined : nights,
+      guests,
+      total: nights && !tooShort ? money(total) : undefined,
+      name: form.full_name,
+      message: form.message,
+      url: pageUrl,
+    }),
   );
+  const waButton = (label: string) =>
+    waHref && (
+      <a
+        href={waHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 font-semibold text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]"
+      >
+        <WhatsAppIcon className="h-5 w-5" /> {label}
+      </a>
+    );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -215,6 +241,12 @@ export default function BookingWidget({
         <p className="mt-4 text-sm text-ink-500">
           {formatDate(checkIn!, locale)} – {formatDate(checkOut!, locale)} · {guests} {guests === 1 ? dict.search.guest : dict.search.guestsPlural}
         </p>
+        {waHref && (
+          <div className="mt-6 border-t border-ink-900/10 pt-5">
+            <p className="mb-3 text-sm text-ink-700">{b.whatsappAfterSent}</p>
+            {waButton(b.whatsappSend)}
+          </div>
+        )}
         <button type="button" className="mt-6 text-sm font-semibold text-gold-700 underline-offset-4 hover:underline" onClick={() => { setStatus("idle"); setRange(undefined); }}>
           {b.another}
         </button>
@@ -247,6 +279,7 @@ export default function BookingWidget({
             disabled={disabled}
             modifiers={{ booked: (d: Date) => !!blocked?.has(toDay(d)) }}
             modifiersClassNames={{ booked: "booked" }}
+            defaultMonth={range?.from ?? today}
             startMonth={today}
             endMonth={addDays(today, 540)}
             numberOfMonths={twoMonths ? 2 : 1}
@@ -337,11 +370,9 @@ export default function BookingWidget({
       </form>
 
       {waHref && (
-        <div className="mt-5 border-t border-ink-900/10 pt-4 text-center">
-          <p className="text-sm text-ink-500">{b.orWhatsapp}</p>
-          <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#25D366] px-5 py-2 text-sm font-semibold text-[#128C7E] hover:bg-[#25D366]/10">
-            <WhatsAppIcon className="h-4 w-4" /> {b.whatsapp}
-          </a>
+        <div className="mt-5 border-t border-ink-900/10 pt-4">
+          <p className="mb-2 text-center text-sm text-ink-500">{b.orWhatsapp}</p>
+          {waButton(b.whatsappSend)}
         </div>
       )}
     </div>

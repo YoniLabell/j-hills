@@ -140,6 +140,8 @@ const he: Dictionary = {
     errorGeneric: "משהו השתבש. נסו שוב או פנו אלינו בוואטסאפ.",
     orWhatsapp: "מעדיפים וואטסאפ?",
     whatsapp: "שאלו בוואטסאפ",
+    whatsappSend: "שליחת הפרטים בוואטסאפ",
+    whatsappAfterSent: "לתשובה מהירה יותר, שלחו את הפרטים גם בוואטסאפ:",
     estimate: "סה״כ משוער",
   },
   footer: {

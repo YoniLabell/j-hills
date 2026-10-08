@@ -20,6 +20,7 @@ type FormState = {
   latitude: string;
   longitude: string;
   google_maps_url: string;
+  owner_whatsapp: string;
   max_guests: string;
   bedrooms: string;
   beds: string;
@@ -54,6 +55,7 @@ function toForm(a?: AdminApartment): FormState {
     latitude: a?.latitude?.toString() ?? "",
     longitude: a?.longitude?.toString() ?? "",
     google_maps_url: a?.google_maps_url ?? "",
+    owner_whatsapp: a?.owner_whatsapp ?? "",
     max_guests: String(a?.max_guests ?? 2),
     bedrooms: String(a?.bedrooms ?? 1),
     beds: String(a?.beds ?? 1),
@@ -121,6 +123,7 @@ export default function ApartmentForm({ apartment, onSaved }: { apartment?: Admi
       latitude: num(form.latitude),
       longitude: num(form.longitude),
       google_maps_url: form.google_maps_url.trim(),
+      owner_whatsapp: form.owner_whatsapp.trim(),
       max_guests: Number(form.max_guests),
       bedrooms: Number(form.bedrooms),
       beds: Number(form.beds),
@@ -247,6 +250,15 @@ export default function ApartmentForm({ apartment, onSaved }: { apartment?: Admi
             );
           })}
         </div>
+      </Card>
+
+      <Card title="Owner WhatsApp">
+        <Field
+          label="Owner's WhatsApp number"
+          hint="Guests' WhatsApp messages about this apartment go to this number, with their dates, guests and name filled in. Leave empty to use the general number from Settings. Example: 972501234567 or 050-123-4567."
+        >
+          <input type="tel" inputMode="tel" dir="ltr" maxLength={50} className={inputClass} {...text("owner_whatsapp")} placeholder="972501234567" />
+        </Field>
       </Card>
 
       <Card title="Airbnb calendar & visibility">

@@ -70,6 +70,7 @@ class ApartmentPublic(ApartmentCard):
     latitude: float | None
     longitude: float | None
     google_maps_url: str
+    whatsapp_number: str
     images: list[ImageOut]
     amenities: list[AmenityOut]
     seo_title: str
@@ -97,6 +98,7 @@ class ApartmentBase(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     google_maps_url: str = Field(default="", max_length=1000)
+    owner_whatsapp: str = Field(default="", max_length=50)
     max_guests: int = Field(default=2, ge=1, le=50)
     bedrooms: int = Field(default=1, ge=0, le=50)
     beds: int = Field(default=1, ge=0, le=100)
@@ -135,6 +137,11 @@ class ApartmentBase(BaseModel):
             raise ValueError("Must be an http(s) URL.")
         return v
 
+    @field_validator("owner_whatsapp")
+    @classmethod
+    def _owner_whatsapp(cls, v: str | None) -> str | None:
+        return normalize_whatsapp(v)
+
     @field_validator("translations")
     @classmethod
     def _locales(cls, v: dict[str, TranslationIn]) -> dict[str, TranslationIn]:
@@ -158,6 +165,7 @@ class ApartmentUpdate(ApartmentBase):
     neighborhood: str | None = None  # type: ignore[assignment]
     address: str | None = None  # type: ignore[assignment]
     google_maps_url: str | None = None  # type: ignore[assignment]
+    owner_whatsapp: str | None = None  # type: ignore[assignment]
     max_guests: int | None = Field(default=None, ge=1, le=50)  # type: ignore[assignment]
     bedrooms: int | None = Field(default=None, ge=0, le=50)  # type: ignore[assignment]
     beds: int | None = Field(default=None, ge=0, le=100)  # type: ignore[assignment]
@@ -184,6 +192,18 @@ class ApartmentUpdate(ApartmentBase):
         return ApartmentBase._url(v)
 
 
+def normalize_whatsapp(v: str | None) -> str | None:
+    """Keep digits only (international format, e.g. 972501234567)."""
+    if v is None:
+        return None
+    digits = re.sub(r"\D", "", v)
+    if v.strip() and len(digits) < 8:
+        raise ValueError("Enter the WhatsApp number in international format, e.g. 972501234567.")
+    if digits.startswith("0") and len(digits) == 10:  # local Israeli mobile 05x… -> 9725x…
+        digits = "972" + digits[1:]
+    return digits
+
+
 class ApartmentAdminOut(BaseModel):
     id: int
     name: str
@@ -196,6 +216,7 @@ class ApartmentAdminOut(BaseModel):
     latitude: float | None
     longitude: float | None
     google_maps_url: str
+    owner_whatsapp: str
     max_guests: int
     bedrooms: int
     beds: int

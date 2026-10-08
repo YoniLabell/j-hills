@@ -31,6 +31,7 @@ export interface AdminApartment {
   latitude: number | null;
   longitude: number | null;
   google_maps_url: string;
+  owner_whatsapp: string;
   max_guests: number;
   bedrooms: number;
   beds: number;

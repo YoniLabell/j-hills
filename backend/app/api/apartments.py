@@ -125,8 +125,8 @@ def get_apartment(slug: str, lang: str = "en", db: Session = Depends(get_db)):
     apt = db.scalar(select(Apartment).where(Apartment.slug == slug, Apartment.active.is_(True)))
     if apt is None:
         raise HTTPException(status_code=404, detail="Apartment not found.")
-    currency = get_site_settings(db).default_currency
-    return apartment_public(apt, normalize_locale(lang), currency)
+    site = get_site_settings(db)
+    return apartment_public(apt, normalize_locale(lang), site.default_currency, site.whatsapp_number)
 
 
 @router.get("/apartments/{apartment_id}/quote")

@@ -195,3 +195,22 @@ def test_dashboard(admin_client, client, db):
     d = admin_client.get("/api/admin/dashboard").json()
     assert d["upcoming_bookings"] == 1 and d["upcoming_checkins"][0]["guest_name"] == "A B"
     assert d["occupancy_percent_30d"] == 10.0
+
+
+def test_owner_whatsapp_overrides_site_number(admin_client, client):
+    admin_client.put("/api/admin/settings", json={"whatsapp_number": "972500000000"})
+    shared = admin_client.post("/api/admin/apartments", json=apartment_payload(name="Shared")).json()
+    owned = admin_client.post(
+        "/api/admin/apartments", json=apartment_payload(name="Owned", owner_whatsapp="050-123-4567")
+    ).json()
+    # Local Israeli mobile numbers are converted to international format.
+    assert owned["owner_whatsapp"] == "972501234567"
+    assert client.get(f"/api/apartments/{owned['slug']}").json()["whatsapp_number"] == "972501234567"
+    assert client.get(f"/api/apartments/{shared['slug']}").json()["whatsapp_number"] == "972500000000"
+    # Clearing the owner number falls back to the site number.
+    admin_client.put(f"/api/admin/apartments/{owned['id']}", json={"owner_whatsapp": ""})
+    assert client.get(f"/api/apartments/{owned['slug']}").json()["whatsapp_number"] == "972500000000"
+    assert (
+        admin_client.post("/api/admin/apartments", json=apartment_payload(owner_whatsapp="123")).status_code
+        == 422
+    )

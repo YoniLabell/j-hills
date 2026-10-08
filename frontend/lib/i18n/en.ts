@@ -139,6 +139,8 @@ const en = {
     errorGeneric: "Something went wrong. Please try again or contact us on WhatsApp.",
     orWhatsapp: "Prefer WhatsApp?",
     whatsapp: "Ask on WhatsApp",
+    whatsappSend: "Send details on WhatsApp",
+    whatsappAfterSent: "Also send the details on WhatsApp for a faster reply:",
     estimate: "Estimated total",
   },
   footer: {

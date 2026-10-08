@@ -43,6 +43,8 @@ export interface ApartmentDetail extends ApartmentCard {
   latitude: number | null;
   longitude: number | null;
   google_maps_url: string;
+  /** Apartment owner's WhatsApp, or the site-wide number. */
+  whatsapp_number: string;
   images: ImageInfo[];
   amenities: Amenity[];
   seo_title: string;

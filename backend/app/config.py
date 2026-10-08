@@ -4,6 +4,7 @@ Every deploy-specific value (database, URLs, secrets, Cloudinary) comes from the
 environment so the same code runs locally and on Render without changes.
 """
 
+import os
 from functools import lru_cache
 
 from pydantic import field_validator
@@ -63,6 +64,10 @@ class Settings(BaseSettings):
     admin_email: str = ""
     whatsapp_number: str = ""
 
+    # Shared secret for POST /api/cron/sync-calendars (external scheduler such as
+    # GitHub Actions). Empty disables the endpoint.
+    cron_secret: str = ""
+
     calendar_fetch_timeout: float = 20.0
     calendar_max_bytes: int = 5 * 1024 * 1024
 
@@ -83,6 +88,10 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         origins = [o.strip().rstrip("/") for o in self.frontend_url.split(",") if o.strip()]
+        # Single-service deploys: the site and the API share Render's URL.
+        render_url = os.environ.get("RENDER_EXTERNAL_URL", "").rstrip("/")
+        if render_url and render_url not in origins:
+            origins.append(render_url)
         if not self.is_production:
             for dev in ("http://localhost:3000", "http://127.0.0.1:3000"):
                 if dev not in origins:

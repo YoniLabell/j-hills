@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin, admin_apartments, apartments, availability, bookings, inquiries
+from app.api import admin, admin_apartments, apartments, availability, bookings, cron, inquiries
 from app.config import get_settings
 
 settings = get_settings()
@@ -67,6 +67,7 @@ app.include_router(admin.public_router)
 app.include_router(admin.router)
 app.include_router(admin_apartments.router)
 app.include_router(bookings.router)
+app.include_router(cron.router)
 
 # Locally stored uploads (development fallback when Cloudinary isn't configured).
 upload_dir = Path(settings.local_upload_dir)

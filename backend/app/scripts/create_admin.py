@@ -6,6 +6,10 @@ Interactive:
 Non-interactive (e.g. in a Render Shell):
     ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='a long password' python -m app.scripts.create_admin
     python -m app.scripts.create_admin --email you@example.com --reset
+
+On startup (single-service / free Render deploys without a Shell):
+    python -m app.scripts.create_admin --if-missing
+    Creates the admin from ADMIN_EMAIL / ADMIN_PASSWORD only if no admin exists yet.
 """
 
 import argparse
@@ -41,7 +45,21 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--email", default=os.environ.get("ADMIN_EMAIL", ""))
     parser.add_argument("--reset", action="store_true", help="Reset the password if the user exists.")
+    parser.add_argument(
+        "--if-missing",
+        action="store_true",
+        help="Non-interactive: create the admin from ADMIN_EMAIL/ADMIN_PASSWORD only if no admin exists.",
+    )
     args = parser.parse_args(argv)
+
+    if args.if_missing:
+        with SessionLocal() as db:
+            if db.scalar(select(User.id).where(User.is_admin.is_(True)).limit(1)) is not None:
+                print("An admin user already exists; nothing to do.")
+                return 0
+        if not args.email or not os.environ.get("ADMIN_PASSWORD"):
+            print("No admin exists yet. Set ADMIN_EMAIL and ADMIN_PASSWORD to create one.")
+            return 0
 
     email = args.email or input("Email: ")
     try:

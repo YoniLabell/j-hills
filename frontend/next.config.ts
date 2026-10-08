@@ -6,6 +6,8 @@ const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").repl
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The single-container Docker image runs the minimal standalone server.
+  output: process.env.NEXT_OUTPUT_STANDALONE === "1" ? "standalone" : undefined,
   turbopack: {
     rules: {
       "*.css": {
@@ -21,6 +23,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/api/:path*", destination: `${apiUrl}/api/:path*` },
       { source: "/uploads/:path*", destination: `${apiUrl}/uploads/:path*` },
+      // Health check that covers both the website and the API.
+      { source: "/health", destination: `${apiUrl}/health` },
     ];
   },
   async headers() {

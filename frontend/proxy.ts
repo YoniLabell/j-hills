@@ -34,5 +34,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Skip API proxying, uploads, Next internals and static files.
-  matcher: ["/((?!api|uploads|_next/static|_next/image|images|favicon|robots.txt|sitemap.xml).*)"],
+  matcher: ["/((?!api|health|uploads|_next/static|_next/image|images|favicon|robots.txt|sitemap.xml).*)"],
 };

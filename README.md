@@ -2,7 +2,10 @@
 
 An independent website for your own vacation apartments in Jerusalem. Guests browse apartments, see live availability, pick dates and send a booking inquiry (or message you on WhatsApp) in **English or Hebrew**. You manage everything from a secure **owner dashboard**. Availability stays **synchronized with Airbnb** through iCal (ICS) calendar feeds, in both directions.
 
-The project is built to deploy on **[Render](https://render.com)** with a single Blueprint (`render.yaml`).
+The project is built to deploy on **[Render](https://render.com)** with a Blueprint. Two are included:
+
+- **`render.yaml` (free):** everything in one free Docker web service, plus a free PostgreSQL database. See [Free single-service deployment](#free-single-service-deployment-renderyaml).
+- **`render.paid.yaml`:** separate API, website and Cron Job services on paid plans. That's the layout shown below and described in sections 11–13.
 
 ```
 Render
@@ -27,8 +30,8 @@ Cloudinary ─────── image storage and optimization
 8. [Uploading images](#8-uploading-images)
 9. [Connecting Airbnb iCal](#9-connecting-airbnb-ical)
 10. [How automatic synchronization works](#10-how-automatic-synchronization-works)
-11. [Deploying to Render](#11-deploying-to-render)
-12. [render.yaml explained](#12-renderyaml-explained)
+11. [Deploying to Render](#11-deploying-to-render) ([free single-service](#free-single-service-deployment-renderyaml))
+12. [render.paid.yaml explained](#12-renderpaidyaml-explained)
 13. [Render environment variables](#13-render-environment-variables)
 14. [Tests](#14-tests)
 15. [API reference](#15-api-reference)
@@ -66,7 +69,10 @@ Cloudinary ─────── image storage and optimization
 
 ```
 /
-├── render.yaml                  Render Blueprint (all services + database + cron)
+├── render.yaml                  Free Render Blueprint (one Docker service + database)
+├── render.paid.yaml             Paid Blueprint (API + website + cron job + database)
+├── Dockerfile, start.sh         Single-container image (website + API)
+├── .github/workflows/           Hourly calendar sync trigger for the free deploy
 ├── .env.example                 Every environment variable, documented
 ├── backend/
 │   ├── app/
@@ -171,6 +177,8 @@ All variables are documented in [`.env.example`](.env.example).
 | `ENVIRONMENT` | API, cron | yes (prod) | `production` turns on Secure cookies, hides `/docs` and enforces `SECRET_KEY`. |
 | `FRONTEND_URL` | API | yes | The website's URL, used for CORS. Comma-separate several (e.g. Render URL + custom domain). |
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | API | yes (prod) | Image storage. The secret stays on the server; uploads are signed by the API. |
+| `CRON_SECRET` | API | free deploy | Secret for `POST /api/cron/sync-calendars`, which GitHub Actions calls hourly. Empty disables the endpoint. |
+| `ADMIN_PASSWORD` | API | free deploy | With `ADMIN_EMAIL`, creates the first admin on startup if none exists. |
 | `CLOUDINARY_FOLDER` | API | no | Folder prefix in Cloudinary (default `jerusalem-apartments`). |
 | `MAX_UPLOAD_MB` | API | no | Maximum size per image (default 10). |
 | `PUBLIC_API_URL` | API | no | The API's public URL. Defaults to Render's `RENDER_EXTERNAL_URL`. Used in the export-feed URL. |
@@ -273,10 +281,12 @@ Manual sync from the admin uses the same code (`POST /api/admin/apartments/{id}/
 
 ## 11. Deploying to Render
 
+> These steps describe the paid multi-service Blueprint (`render.paid.yaml`): set the Blueprint file path to `render.paid.yaml` when creating it. For the free one-service setup, see [Free single-service deployment](#free-single-service-deployment-renderyaml).
+
 1. **Push the repository to GitHub** (or GitLab/Bitbucket).
 2. **Connect the repository to Render.** Sign in at <https://dashboard.render.com> and connect your Git provider.
 3. **Choose Blueprint deployment.** Click **New → Blueprint** and select the repository.
-4. **Render reads `render.yaml`** and shows the four resources it will create: the API, the website, the PostgreSQL database and the cron job.
+4. **Render reads the Blueprint file** (`render.paid.yaml`) and shows the four resources it will create: the API, the website, the PostgreSQL database and the cron job.
 5. **The PostgreSQL database** `jerusalem-apartments-db` is created automatically. Its connection string is injected into the API and cron job as `DATABASE_URL`.
 6. **Configure the backend environment variables.** Render prompts for every `sync: false` value. `SECRET_KEY` is generated for you.
    - `FRONTEND_URL`: the website URL, normally `https://jerusalem-apartments-web.onrender.com`. Check the real URL after creation, because Render adds a suffix if the name is taken.
@@ -305,7 +315,51 @@ Manual sync from the admin uses the same code (`POST /api/admin/apartments/{id}/
 - On a free API service, `preDeployCommand` isn't available. Change the API's start command to `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`. This is safe because the migration lock prevents concurrent runs.
 - Cron jobs have no free plan. If you skip the cron job, use the manual **Sync Airbnb Calendar** button.
 
-## 12. `render.yaml` explained
+## Free single-service deployment (`render.yaml`)
+
+`render.yaml` runs the whole application in **one free Docker web service** (`Dockerfile` + `start.sh`), plus a free PostgreSQL database. Render doesn't allow a database inside a web service, and the service's disk is wiped on every deploy, so the database stays a separate free resource.
+
+```
+Render
+├── Web Service (Docker, free) ── jerusalem-apartments
+│   ├── Next.js   on $PORT (public)
+│   └── FastAPI   on 127.0.0.1:8000 (internal; reached via /api, /uploads, /health)
+└── PostgreSQL (free) ─────────── jerusalem-apartments-db
+GitHub Actions (free) ─── hourly POST /api/cron/sync-calendars  (Airbnb sync)
+```
+
+On every start, `start.sh`:
+
+1. runs `alembic upgrade head` (safe: migrations take an advisory lock),
+2. creates the first admin from `ADMIN_EMAIL` and `ADMIN_PASSWORD` if no admin exists yet (free instances have no Shell),
+3. starts FastAPI and Next.js. If either one stops, the container exits and Render restarts it.
+
+### Steps
+
+1. Render → **New → Blueprint** → select the repository. Render reads `render.yaml`.
+2. Fill in the values it asks for:
+   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` (at least 10 characters): your login for `/admin`.
+   - `CRON_SECRET`: any long random string, e.g. the output of `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: **required for photos**. Without Cloudinary, uploaded photos disappear on the next deploy.
+   - `WHATSAPP_NUMBER`, e.g. `972501234567`.
+3. Click **Apply** and wait until the service is **Live**. The first build takes a few minutes.
+4. Open `https://<your-service>.onrender.com/health`. It should return `{"status":"ok"}`.
+5. Sign in at `https://<your-service>.onrender.com/admin/login`.
+6. **Hourly Airbnb sync:** in GitHub → repository **Settings → Secrets and variables → Actions → New repository secret**, add:
+   - `SITE_URL` = `https://<your-service>.onrender.com`
+   - `CRON_SECRET` = the same value as on Render
+
+   Then open the **Actions** tab → **Sync Airbnb calendars** → **Run workflow** to test it. After that it runs every hour. (GitHub only runs scheduled workflows from the default branch.)
+
+`FRONTEND_URL` and `NEXT_PUBLIC_API_URL` aren't needed here: the website and the API share one URL.
+
+### Free-plan limits
+
+- The service **sleeps after about 15 minutes** without traffic. The next visitor waits about a minute while it starts. The hourly sync also wakes it.
+- **Free PostgreSQL databases expire 30 days after creation.** Before then, change the database plan to a paid one (Render → database → Settings) to keep your data.
+- To move to the paid multi-service layout later, create a Blueprint from `render.paid.yaml`.
+
+## 12. `render.paid.yaml` explained
 
 | Block | What it does |
 | --- | --- |
@@ -358,7 +412,7 @@ cd frontend
 npm run lint && npm run typecheck && npm run build
 ```
 
-The 69 backend tests cover:
+The 73 backend tests cover:
 
 - Airbnb ICS parsing, including edge cases and invalid feeds
 - Importing events, duplicate prevention, modified events and deleted (cancelled) events

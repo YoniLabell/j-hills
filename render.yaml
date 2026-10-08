@@ -1,36 +1,42 @@
-# Render Blueprint: deploys the whole project (API, website, database, cron job).
-# Render → New → Blueprint → pick this repository. Values marked `sync: false`
-# are secrets/URLs you type in the Render dashboard; they are never stored here.
+# FREE Render Blueprint — everything in ONE web service.
 #
-# Region: Frankfurt is the closest Render region to Israel. All resources must
-# share a region so the services can reach the database over the private network.
+#   jerusalem-apartments     Docker web service (free): Next.js website + FastAPI API
+#   jerusalem-apartments-db  PostgreSQL (free)
+#
+# Render → New → Blueprint → pick this repository. Values marked `sync: false`
+# are typed in the Render dashboard and never stored in Git.
+#
+# Free-plan limits to know about:
+#   * The service sleeps after ~15 minutes without traffic; the first visit
+#     afterwards takes about a minute to wake it up.
+#   * Free PostgreSQL databases expire 30 days after creation — upgrade the
+#     database plan (or back it up) before then to keep your data.
+#   * Render has no free Cron Jobs: the hourly Airbnb sync is triggered by the
+#     GitHub Actions workflow in .github/workflows/sync-calendars.yml instead.
+#   * The disk is wiped on every deploy: configure Cloudinary for photos.
+#
+# The paid multi-service setup is in render.paid.yaml.
 
 databases:
   - name: jerusalem-apartments-db
     databaseName: jerusalem_apartments
     user: jerusalem_apartments
-    plan: basic-256mb          # use "free" to try things out (Render deletes free databases after 30 days)
+    plan: free
     region: frankfurt
     postgresMajorVersion: "16"
-    ipAllowList: []            # no public access; services connect over the private network
+    ipAllowList: []            # no public access; the service connects privately
 
 services:
-  # ------------------------------------------------------------------ FastAPI backend
   - type: web
-    name: jerusalem-apartments-api
-    runtime: python
-    rootDir: backend
-    region: frankfurt
-    plan: starter              # "free" works too, but free instances sleep and don't support preDeployCommand
-    buildCommand: pip install -r requirements.txt
-    # Runs once per deploy, before the new version receives traffic. Migrations
-    # also take a PostgreSQL advisory lock (alembic/env.py), so they can never run concurrently.
-    preDeployCommand: alembic upgrade head
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    name: jerusalem-apartments
+    runtime: docker
+    plan: free
+    region: frankfurt          # closest Render region to Israel; must match the database
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # start.sh runs migrations, creates the first admin, then starts the API and the website.
     healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.13.4"
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
@@ -39,9 +45,15 @@ services:
           property: connectionString
       - key: SECRET_KEY
         generateValue: true    # Render generates a strong random value once
-      - key: FORWARDED_ALLOW_IPS
-        value: "*"             # trust Render's proxy headers (correct https URLs / client IPs)
-      - key: FRONTEND_URL      # e.g. https://jerusalem-apartments-web.onrender.com (CORS)
+      # First admin, created automatically on startup if no admin exists yet.
+      # You can delete ADMIN_PASSWORD after your first login.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD    # at least 10 characters
+        sync: false
+      # Secret for the hourly sync call from GitHub Actions. Put the SAME value in
+      # the GitHub repository secret CRON_SECRET. Any long random string.
+      - key: CRON_SECRET
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
@@ -49,51 +61,5 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-      - key: ADMIN_EMAIL
+      - key: WHATSAPP_NUMBER   # e.g. 972501234567 (editable later in Settings)
         sync: false
-      - key: WHATSAPP_NUMBER   # e.g. 972501234567 (default for the settings page)
-        sync: false
-
-  # ------------------------------------------------------------------ Next.js website
-  - type: web
-    name: jerusalem-apartments-web
-    runtime: node
-    rootDir: frontend
-    region: frankfurt
-    plan: starter
-    buildCommand: npm install && npm run build
-    startCommand: npm run start -- -p $PORT
-    healthCheckPath: /robots.txt
-    envVars:
-      - key: NODE_VERSION
-        value: "22"
-      - key: NEXT_TELEMETRY_DISABLED
-        value: "1"
-      # Public URL of the API, e.g. https://jerusalem-apartments-api.onrender.com
-      # Read at BUILD time: after changing it, trigger a new deploy of this service.
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
-      # Optional: your custom domain (https://www.example.com). Leave empty to use
-      # this service's Render URL. Used for sitemap.xml and canonical/OG URLs (read at runtime).
-      - key: SITE_URL
-        sync: false
-
-  # ------------------------------------------------------------------ Airbnb calendar sync
-  - type: cron
-    name: airbnb-calendar-sync
-    runtime: python
-    rootDir: backend
-    region: frankfurt
-    plan: starter
-    schedule: "0 * * * *"      # every hour, on the hour (UTC)
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m app.scripts.sync_calendars
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.13.4"
-      - key: ENVIRONMENT
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: jerusalem-apartments-db
-          property: connectionString

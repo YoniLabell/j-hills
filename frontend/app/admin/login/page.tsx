@@ -31,7 +31,8 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    // method="post" so a submit before hydration never puts the password in the URL.
+    <form onSubmit={submit} method="post" className="space-y-4">
       {error && <Notice>{error}</Notice>}
       <Field label="Email">
         <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />

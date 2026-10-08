@@ -1,0 +1,99 @@
+# Render Blueprint: deploys the whole project (API, website, database, cron job).
+# Render → New → Blueprint → pick this repository. Values marked `sync: false`
+# are secrets/URLs you type in the Render dashboard; they are never stored here.
+#
+# Region: Frankfurt is the closest Render region to Israel. All resources must
+# share a region so the services can reach the database over the private network.
+
+databases:
+  - name: jerusalem-apartments-db
+    databaseName: jerusalem_apartments
+    user: jerusalem_apartments
+    plan: basic-256mb          # use "free" to try things out (Render deletes free databases after 30 days)
+    region: frankfurt
+    postgresMajorVersion: "16"
+    ipAllowList: []            # no public access; services connect over the private network
+
+services:
+  # ------------------------------------------------------------------ FastAPI backend
+  - type: web
+    name: jerusalem-apartments-api
+    runtime: python
+    rootDir: backend
+    region: frankfurt
+    plan: starter              # "free" works too, but free instances sleep and don't support preDeployCommand
+    buildCommand: pip install -r requirements.txt
+    # Runs once per deploy, before the new version receives traffic. Migrations
+    # also take a PostgreSQL advisory lock (alembic/env.py), so they can never run concurrently.
+    preDeployCommand: alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jerusalem-apartments-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true    # Render generates a strong random value once
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"             # trust Render's proxy headers (correct https URLs / client IPs)
+      - key: FRONTEND_URL      # e.g. https://jerusalem-apartments-web.onrender.com (CORS)
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: WHATSAPP_NUMBER   # e.g. 972501234567 (default for the settings page)
+        sync: false
+
+  # ------------------------------------------------------------------ Next.js website
+  - type: web
+    name: jerusalem-apartments-web
+    runtime: node
+    rootDir: frontend
+    region: frankfurt
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run start -- -p $PORT
+    healthCheckPath: /robots.txt
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      # Public URL of the API, e.g. https://jerusalem-apartments-api.onrender.com
+      # Read at BUILD time: after changing it, trigger a new deploy of this service.
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      # Optional: your custom domain (https://www.example.com). Leave empty to use
+      # this service's Render URL. Used for sitemap.xml and canonical/OG URLs (read at runtime).
+      - key: SITE_URL
+        sync: false
+
+  # ------------------------------------------------------------------ Airbnb calendar sync
+  - type: cron
+    name: airbnb-calendar-sync
+    runtime: python
+    rootDir: backend
+    region: frankfurt
+    plan: starter
+    schedule: "0 * * * *"      # every hour, on the hour (UTC)
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app.scripts.sync_calendars
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jerusalem-apartments-db
+          property: connectionString

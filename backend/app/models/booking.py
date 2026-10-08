@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 from app.models.base import TimestampMixin
-from app.models.enums import BookingStatus, InquiryStatus
+from app.models.enums import BookingStatus, InquiryChannel, InquiryStatus
 
 
 class BookingInquiry(TimestampMixin, Base):
@@ -29,6 +29,7 @@ class BookingInquiry(TimestampMixin, Base):
     estimated_total: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     currency: Mapped[str] = mapped_column(String(3), default="ILS", nullable=False)
     admin_notes: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    channel: Mapped[str] = mapped_column(String(16), default=InquiryChannel.FORM, nullable=False)
 
     apartment = relationship("Apartment", lazy="joined")
     booking: Mapped["Booking | None"] = relationship(back_populates="inquiry", uselist=False)

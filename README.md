@@ -1,6 +1,6 @@
 # Jerusalem Apartments — direct-booking website
 
-An independent website for your own vacation apartments in Jerusalem. Guests browse apartments, see live availability, pick dates and send a booking inquiry (or message you on WhatsApp) in **English or Hebrew**. You manage everything from a secure **owner dashboard**. Availability stays **synchronized with Airbnb** through iCal (ICS) calendar feeds, in both directions.
+An independent website for your own vacation apartments in Jerusalem. Guests browse apartments, see live availability and prices, pick dates and **book on WhatsApp** with one tap (or by email), in **English or Hebrew**. Every WhatsApp/email click is silently recorded as an inquiry in the owner dashboard, where it can be confirmed to block the dates. You manage everything from a secure **owner dashboard**. Availability stays **synchronized with Airbnb** through iCal (ICS) calendar feeds, in both directions.
 
 The project is built to deploy on **[Render](https://render.com)** with a Blueprint. Two are included:
 
@@ -442,7 +442,8 @@ Interactive docs are available at `http://localhost:8000/docs` (disabled in prod
 | GET | `/api/apartments/{slug}` | Apartment details (`?lang=he` for Hebrew) |
 | GET | `/api/apartments/{id}/availability` | `?start_date=&end_date=` → merged blocked periods |
 | GET | `/api/apartments/{id}/quote` | `?check_in=&check_out=` → price and availability |
-| POST | `/api/booking-inquiries` | Rate-limited (5 per 10 min per IP) |
+| POST | `/api/leads` | Silently records a "Book on WhatsApp" / email click (`channel`: `whatsapp` or `email`). De-duplicated for 30 minutes; rate-limited. |
+| POST | `/api/booking-inquiries` | Full inquiry form (kept for API use; the website now books via WhatsApp). Rate-limited (5 per 10 min per IP). |
 | GET | `/api/settings`, `/api/amenities`, `/api/neighborhoods` | Site data |
 | GET | `/api/calendar/{token}.ics` | Outgoing iCal feed for Airbnb |
 

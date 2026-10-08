@@ -155,6 +155,7 @@ def inquiry_out(inquiry: BookingInquiry) -> InquiryOut:
         email=inquiry.email,
         message=inquiry.message,
         locale=inquiry.locale,
+        channel=inquiry.channel,
         status=inquiry.status,
         estimated_total=float(inquiry.estimated_total) if inquiry.estimated_total is not None else None,
         currency=inquiry.currency,

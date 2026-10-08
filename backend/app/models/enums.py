@@ -33,6 +33,15 @@ class InquiryStatus(StrEnum):
     CANCELLED = "CANCELLED"
 
 
+class InquiryChannel(StrEnum):
+    """How the guest reached out. WhatsApp/email leads are recorded silently when
+    the guest clicks the button; the conversation itself happens in that app."""
+
+    FORM = "form"
+    WHATSAPP = "whatsapp"
+    EMAIL = "email"
+
+
 class SyncTrigger(StrEnum):
     CRON = "cron"
     MANUAL = "manual"

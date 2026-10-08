@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, LoaderCircle } from "lucide-react";
+import { CheckCircle2, LoaderCircle, Mail } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { enUS, he } from "react-day-picker/locale";
@@ -60,6 +60,7 @@ function useIsWide() {
 export default function BookingWidget({
   apartment,
   whatsappNumber,
+  email,
   pageUrl,
   initialCheckIn,
   initialCheckOut,
@@ -68,6 +69,8 @@ export default function BookingWidget({
   apartment: Apt;
   /** The apartment owner's WhatsApp (or the site-wide number). */
   whatsappNumber: string;
+  /** Site contact email, offered to guests without WhatsApp. */
+  email: string;
   pageUrl: string;
   initialCheckIn?: string;
   initialCheckOut?: string;
@@ -85,19 +88,10 @@ export default function BookingWidget({
   const [loadError, setLoadError] = useState(false);
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [guests, setGuests] = useState(Math.min(Math.max(initialGuests || 2, 1), apartment.max_guests));
-  const [form, setForm] = useState({ full_name: "", phone: "", email: "", message: "", website: "" });
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
-  const [error, setError] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [honeypot, setHoneypot] = useState("");
+  const [opened, setOpened] = useState<"whatsapp" | "email" | null>(null);
   const twoMonths = useIsWide();
-
-  const reloadAvailability = useCallback(() => {
-    fetchBlockedNights(apartment.id, today)
-      .then((nights) => {
-        setBlocked(nights);
-        setLoadError(false);
-      })
-      .catch(() => setLoadError(true));
-  }, [apartment.id, today]);
 
   const isNightFree = useCallback((d: Date) => d >= today && !!blocked && !blocked.has(toDay(d)), [blocked, today]);
 
@@ -136,7 +130,7 @@ export default function BookingWidget({
   // Hotel-style selection: a check-out day only needs the nights *before* it to be free,
   // so the day another guest checks in can still be chosen as your check-out.
   function onDayClick(day: Date) {
-    setError("");
+    setOpened(null);
     if (!range?.from || range.to) {
       if (isNightFree(day)) setRange({ from: day, to: undefined });
       return;
@@ -168,91 +162,35 @@ export default function BookingWidget({
   const total = nights ? accommodation + apartment.cleaning_fee : 0;
   const money = (n: number) => formatPrice(n, apartment.currency, locale);
 
-  // Everything the visitor has entered so far goes into the WhatsApp message.
-  const waHref = whatsappLink(
-    whatsappNumber,
-    bookingWhatsAppMessage(locale, {
-      apartment: apartment.name,
-      checkIn,
-      checkOut: checkIn ? checkOut : undefined,
-      nights: tooShort ? undefined : nights,
-      guests,
-      total: nights && !tooShort ? money(total) : undefined,
-      name: form.full_name,
-      message: form.message,
-      url: pageUrl,
-    }),
-  );
-  const waButton = (label: string) =>
-    waHref && (
-      <a
-        href={waHref}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 font-semibold text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]"
-      >
-        <WhatsAppIcon className="h-5 w-5" /> {label}
-      </a>
-    );
+  // Everything the visitor has entered so far goes into the message.
+  const messageText = bookingWhatsAppMessage(locale, {
+    apartment: apartment.name,
+    checkIn,
+    checkOut: checkIn ? checkOut : undefined,
+    nights: tooShort ? undefined : nights,
+    guests,
+    total: nights && !tooShort ? money(total) : undefined,
+    name: fullName,
+    url: pageUrl,
+  });
+  const waHref = whatsappLink(whatsappNumber, messageText);
+  const mailHref = email
+    ? `mailto:${email}?subject=${encodeURIComponent(t(b.emailSubject, { apartment: apartment.name }))}&body=${encodeURIComponent(messageText)}`
+    : null;
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!checkIn || !checkOut || tooShort) return;
-    setStatus("sending");
-    setError("");
-    try {
-      const res = await fetch("/api/booking-inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apartment_id: apartment.id, check_in: checkIn, check_out: checkOut, guests, locale, ...form }),
-      });
-      if (res.ok) {
-        setStatus("sent");
-        return;
-      }
-      setStatus("idle");
-      if (res.status === 409) {
-        setError(b.errorUnavailable);
-        setRange(undefined);
-        reloadAvailability();
-      } else if (res.status === 429) {
-        setError(b.errorRate);
-      } else if (res.status === 422) {
-        const body = await res.json().catch(() => null);
-        const detail = body?.detail;
-        setError(typeof detail === "string" ? detail : Array.isArray(detail) ? detail.map((d: { msg: string }) => d.msg.replace(/^Value error, /, "")).join(" ") : b.errorGeneric);
-      } else {
-        setError(b.errorGeneric);
-      }
-    } catch {
-      setStatus("idle");
-      setError(b.errorGeneric);
-    }
+  /** Record the contact in the admin without delaying WhatsApp/email from opening. */
+  function recordLead(channel: "whatsapp" | "email") {
+    setOpened(channel);
+    if (!checkIn || !checkOut || honeypot) return;
+    fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({ apartment_id: apartment.id, check_in: checkIn, check_out: checkOut, guests, channel, full_name: fullName, locale }),
+    }).catch(() => undefined);
   }
 
   const input = "w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-400/30";
-
-  if (status === "sent") {
-    return (
-      <div className="rounded-3xl bg-white p-6 text-center shadow-xl shadow-ink-900/5 ring-1 ring-ink-900/5" role="status">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-olive-600" aria-hidden="true" />
-        <h2 className="mt-4 font-serif text-2xl">{b.successTitle}</h2>
-        <p className="mt-2 text-ink-700">{b.successText}</p>
-        <p className="mt-4 text-sm text-ink-500">
-          {formatDate(checkIn!, locale)} – {formatDate(checkOut!, locale)} · {guests} {guests === 1 ? dict.search.guest : dict.search.guestsPlural}
-        </p>
-        {waHref && (
-          <div className="mt-6 border-t border-ink-900/10 pt-5">
-            <p className="mb-3 text-sm text-ink-700">{b.whatsappAfterSent}</p>
-            {waButton(b.whatsappSend)}
-          </div>
-        )}
-        <button type="button" className="mt-6 text-sm font-semibold text-gold-700 underline-offset-4 hover:underline" onClick={() => { setStatus("idle"); setRange(undefined); }}>
-          {b.another}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="rounded-3xl bg-white p-5 shadow-xl shadow-ink-900/5 ring-1 ring-ink-900/5 sm:p-6">
@@ -323,7 +261,7 @@ export default function BookingWidget({
         </dl>
       )}
 
-      <form onSubmit={submit} className="mt-5 space-y-3">
+      <div className="mt-5 space-y-3">
         <div>
           <label htmlFor="bw-guests" className="mb-1 block text-sm font-medium">{dict.search.guests}</label>
           <select id="bw-guests" value={guests} onChange={(e) => setGuests(Number(e.target.value))} className={input}>
@@ -333,48 +271,43 @@ export default function BookingWidget({
           </select>
         </div>
         <div>
-          <label htmlFor="bw-name" className="mb-1 block text-sm font-medium">{b.fullName}</label>
-          <input id="bw-name" required minLength={2} maxLength={200} autoComplete="name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className={input} />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-          <div>
-            <label htmlFor="bw-phone" className="mb-1 block text-sm font-medium">{b.phone}</label>
-            <input id="bw-phone" type="tel" required dir="ltr" autoComplete="tel" pattern="[0-9+\-() ]{5,50}" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={`${input} text-start`} />
-          </div>
-          <div>
-            <label htmlFor="bw-email" className="mb-1 block text-sm font-medium">{b.email}</label>
-            <input id="bw-email" type="email" required dir="ltr" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={`${input} text-start`} />
-          </div>
-        </div>
-        <div>
-          <label htmlFor="bw-message" className="mb-1 block text-sm font-medium">{b.message}</label>
-          <textarea id="bw-message" rows={3} maxLength={3000} placeholder={b.messagePlaceholder} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={input} />
+          <label htmlFor="bw-name" className="mb-1 block text-sm font-medium">{b.nameOptional}</label>
+          <input id="bw-name" maxLength={200} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={input} />
         </div>
         {/* Honeypot: hidden from people, tempting for bots. */}
         <div aria-hidden="true" className="absolute -start-[9999px] h-0 w-0 overflow-hidden">
           <label htmlFor="bw-website">Website</label>
-          <input id="bw-website" tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
+          <input id="bw-website" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
         </div>
 
-        {error && <p role="alert" className="rounded-xl bg-terracotta-500/10 p-3 text-sm text-terracotta-600">{error}</p>}
+        {waHref && (
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => recordLead("whatsapp")}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-lg font-semibold text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]"
+          >
+            <WhatsAppIcon className="h-5 w-5" /> {b.bookWhatsapp}
+          </a>
+        )}
+        {opened === "whatsapp" && (
+          <p role="status" className="flex items-start gap-2 rounded-xl bg-[#25D366]/10 p-3 text-sm text-ink-800">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#128C7E]" aria-hidden="true" /> {b.openedWhatsapp}
+          </p>
+        )}
+        <p className="text-center text-xs text-ink-500">{b.noteWhatsapp}</p>
 
-        <button
-          type="submit"
-          disabled={!checkOut || tooShort || status === "sending"}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-olive-700 px-6 py-3.5 font-semibold text-white transition hover:bg-olive-800 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {status === "sending" && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
-          {status === "sending" ? b.sending : b.submit}
-        </button>
-        <p className="text-center text-xs text-ink-500">{b.note}</p>
-      </form>
-
-      {waHref && (
-        <div className="mt-5 border-t border-ink-900/10 pt-4">
-          <p className="mb-2 text-center text-sm text-ink-500">{b.orWhatsapp}</p>
-          {waButton(b.whatsappSend)}
-        </div>
-      )}
+        {mailHref && (
+          <p className="border-t border-ink-900/10 pt-3 text-center text-sm text-ink-700">
+            {b.noWhatsapp}{" "}
+            <a href={mailHref} onClick={() => recordLead("email")} className="inline-flex items-center gap-1 font-semibold text-gold-700 underline-offset-4 hover:underline">
+              <Mail className="h-4 w-4" aria-hidden="true" /> {b.sendEmail}
+            </a>
+          </p>
+        )}
+        {opened === "email" && <p role="status" className="text-center text-sm text-ink-700">{b.openedEmail}</p>}
+      </div>
     </div>
   );
 }

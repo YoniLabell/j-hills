@@ -115,7 +115,7 @@ def confirm_inquiry(db: Session, inquiry: BookingInquiry, *, total_price: Decima
         check_in=inquiry.check_in,
         check_out=inquiry.check_out,
         guests=inquiry.guests,
-        guest_name=inquiry.full_name,
+        guest_name=inquiry.full_name or f"{inquiry.channel.capitalize()} guest",
         guest_email=inquiry.email,
         guest_phone=inquiry.phone,
         source=BookingSource.WEBSITE,

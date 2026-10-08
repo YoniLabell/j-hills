@@ -57,6 +57,7 @@ def _clean_tables():
         for table in reversed(Base.metadata.sorted_tables):
             conn.execute(table.delete())
     inquiries_api.inquiry_limiter.reset()
+    inquiries_api.lead_limiter.reset()
     admin_api.login_ip_limiter.reset()
     admin_api.login_email_limiter.reset()
 

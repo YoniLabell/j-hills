@@ -82,6 +82,7 @@ export interface Inquiry {
   email: string;
   message: string;
   locale: string;
+  channel: "form" | "whatsapp" | "email";
   status: "NEW" | "CONTACTED" | "CONFIRMED" | "CANCELLED";
   estimated_total: number | null;
   currency: string;

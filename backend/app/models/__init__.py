@@ -6,6 +6,7 @@ from app.models.enums import (
     BlockSource,
     BookingSource,
     BookingStatus,
+    InquiryChannel,
     InquiryStatus,
     SyncTrigger,
 )
@@ -26,6 +27,7 @@ __all__ = [
     "BookingSource",
     "BookingStatus",
     "CalendarSyncLog",
+    "InquiryChannel",
     "InquiryStatus",
     "SITE_SETTINGS_ID",
     "SiteSettings",

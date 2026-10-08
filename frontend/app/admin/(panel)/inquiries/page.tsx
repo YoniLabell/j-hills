@@ -9,6 +9,8 @@ import { AdminApiError, adminFetch, json } from "@/lib/admin-api";
 import type { Inquiry } from "@/lib/admin-types";
 import { whatsappLink } from "@/lib/whatsapp";
 
+const CHANNEL_LABEL: Record<string, string> = { form: "Website form", whatsapp: "WhatsApp", email: "Email" };
+
 const STATUSES = ["", "NEW", "CONTACTED", "CONFIRMED", "CANCELLED"] as const;
 
 function replyMessage(i: Inquiry) {
@@ -74,20 +76,29 @@ export default function InquiriesPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-lg font-semibold">{i.full_name}</p>
+                      <p className="text-lg font-semibold">{i.full_name || <span className="text-ink-500">Guest (no name given)</span>}</p>
                       <Badge value={i.status} />
+                      <Badge value={i.channel === "whatsapp" ? "website" : "manual"} label={CHANNEL_LABEL[i.channel] ?? i.channel} />
                     </div>
                     <p className="text-sm text-ink-700">
                       <span className="font-medium">{i.apartment_name}</span> · {fmtDate(i.check_in)} → {fmtDate(i.check_out)} ({i.nights} nights) · {i.guests} guests · est. {fmtMoney(i.estimated_total, i.currency)}
                     </p>
                     <p className="mt-1 text-sm text-ink-500">
-                      <span dir="ltr">{i.phone}</span> · {i.email} · received {fmtDate(i.created_at, true)} · {i.locale === "he" ? "Hebrew" : "English"}
+                      {i.phone && <><span dir="ltr">{i.phone}</span> · </>}
+                      {i.email && <>{i.email} · </>}
+                      received {fmtDate(i.created_at, true)} · {i.locale === "he" ? "Hebrew" : "English"}
                     </p>
+                    {i.channel !== "form" && (
+                      <p className="mt-1 text-xs text-ink-500">
+                        The guest clicked “{i.channel === "whatsapp" ? "Book on WhatsApp" : "Send us an email"}”. The conversation continues in your{" "}
+                        {i.channel === "whatsapp" ? "WhatsApp" : "email inbox"}. Confirm here once you agree, to block the dates.
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-semibold text-white"><WhatsAppIcon className="h-4 w-4" /> WhatsApp</a>}
-                    <a href={`tel:${i.phone.replace(/[^\d+]/g, "")}`} className="inline-flex items-center gap-1.5 rounded-lg border border-ink-900/15 px-3 py-2 text-sm font-semibold"><Phone className="h-4 w-4" /> Call</a>
-                    <a href={`mailto:${i.email}?subject=${encodeURIComponent(`Your stay at ${i.apartment_name}`)}&body=${encodeURIComponent(replyMessage(i))}`} className="inline-flex items-center gap-1.5 rounded-lg border border-ink-900/15 px-3 py-2 text-sm font-semibold"><Mail className="h-4 w-4" /> Email</a>
+                    {wa && i.phone && <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-semibold text-white"><WhatsAppIcon className="h-4 w-4" /> WhatsApp</a>}
+                    {i.phone && <a href={`tel:${i.phone.replace(/[^\d+]/g, "")}`} className="inline-flex items-center gap-1.5 rounded-lg border border-ink-900/15 px-3 py-2 text-sm font-semibold"><Phone className="h-4 w-4" /> Call</a>}
+                    {i.email && <a href={`mailto:${i.email}?subject=${encodeURIComponent(`Your stay at ${i.apartment_name}`)}&body=${encodeURIComponent(replyMessage(i))}`} className="inline-flex items-center gap-1.5 rounded-lg border border-ink-900/15 px-3 py-2 text-sm font-semibold"><Mail className="h-4 w-4" /> Email</a>}
                   </div>
                 </div>
                 {i.message && <p className="mt-3 whitespace-pre-line rounded-lg bg-sand-100 p-3 text-sm">{i.message}</p>}

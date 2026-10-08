@@ -1,4 +1,5 @@
 import logging
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -9,8 +10,8 @@ from app.api.deps import bad_dates
 from app.auth.dependencies import get_current_admin
 from app.config import get_settings
 from app.db.database import get_db
-from app.models import Apartment, BookingInquiry, BookingStatus, InquiryStatus
-from app.schemas.booking import InquiryCreate, InquiryCreated, InquiryOut, InquiryUpdate
+from app.models import Apartment, BookingInquiry, BookingStatus, InquiryChannel, InquiryStatus
+from app.schemas.booking import InquiryCreate, InquiryCreated, InquiryOut, InquiryUpdate, LeadCreate
 from app.services.availability_service import InvalidDateRange, is_available, validate_stay
 from app.services.booking_service import (
     BookingConflict,
@@ -27,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 _settings = get_settings()
 inquiry_limiter = RateLimiter(_settings.inquiry_rate_limit, _settings.inquiry_rate_window_seconds)
+# Lead clicks are cheap and may repeat (guest reopens WhatsApp), so allow more.
+lead_limiter = RateLimiter(20, 600)
+LEAD_DEDUP_WINDOW = timedelta(minutes=30)
 
 router = APIRouter(tags=["inquiries"])
 
@@ -86,6 +90,74 @@ def create_inquiry(payload: InquiryCreate, request: Request, db: Session = Depen
         estimated_total=float(q.total),
         currency=currency,
     )
+
+
+@router.post("/api/leads", status_code=status.HTTP_201_CREATED)
+def record_lead(payload: LeadCreate, request: Request, db: Session = Depends(get_db)):
+    """Silently record a WhatsApp/email contact click so it appears in the admin.
+
+    The browser fires this without waiting for it; the guest's WhatsApp opens
+    regardless of the result.
+    """
+    lead_limiter.check(client_ip(request))
+    apartment = db.get(Apartment, payload.apartment_id)
+    if apartment is None or not apartment.active:
+        raise HTTPException(status_code=404, detail="Apartment not found.")
+    try:
+        validate_stay(payload.check_in, payload.check_out)
+    except InvalidDateRange as exc:
+        raise bad_dates(exc) from exc
+    if payload.guests > apartment.max_guests:
+        raise HTTPException(
+            status_code=422, detail=f"This apartment hosts up to {apartment.max_guests} guests."
+        )
+    if payload.website:  # honeypot
+        return {"id": 0, "created": False}
+    if not is_available(db, apartment.id, payload.check_in, payload.check_out):
+        raise HTTPException(status_code=409, detail="Sorry, these dates are no longer available.")
+
+    # The same guest clicking twice (or switching WhatsApp -> email) shouldn't create duplicates.
+    recent = db.scalar(
+        select(BookingInquiry)
+        .where(
+            BookingInquiry.apartment_id == apartment.id,
+            BookingInquiry.check_in == payload.check_in,
+            BookingInquiry.check_out == payload.check_out,
+            BookingInquiry.guests == payload.guests,
+            BookingInquiry.channel.in_([InquiryChannel.WHATSAPP, InquiryChannel.EMAIL]),
+            BookingInquiry.status == InquiryStatus.NEW,
+            BookingInquiry.created_at >= datetime.now(UTC) - LEAD_DEDUP_WINDOW,
+        )
+        .order_by(BookingInquiry.created_at.desc())
+        .limit(1)
+    )
+    if recent is not None and recent.full_name in ("", payload.full_name):
+        if payload.full_name and not recent.full_name:
+            recent.full_name = payload.full_name
+        recent.channel = payload.channel
+        db.commit()
+        return {"id": recent.id, "created": False}
+
+    q = quote(apartment, payload.check_in, payload.check_out)
+    lead = BookingInquiry(
+        apartment_id=apartment.id,
+        check_in=payload.check_in,
+        check_out=payload.check_out,
+        guests=payload.guests,
+        full_name=payload.full_name,
+        phone="",
+        email="",
+        message="",
+        locale=payload.locale,
+        status=InquiryStatus.NEW,
+        channel=payload.channel,
+        estimated_total=q.total,
+        currency=get_site_settings(db).default_currency,
+    )
+    db.add(lead)
+    db.commit()
+    logger.info("New %s lead %s for apartment %s", payload.channel, lead.id, apartment.id)
+    return {"id": lead.id, "created": True}
 
 
 admin_router = APIRouter(

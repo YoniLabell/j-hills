@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     # Shared secret for POST /api/cron/sync-calendars (external scheduler such as
     # GitHub Actions). Empty disables the endpoint.
     cron_secret: str = ""
+    google_forms_secret: str = ""
 
     calendar_fetch_timeout: float = 20.0
     calendar_max_bytes: int = 5 * 1024 * 1024

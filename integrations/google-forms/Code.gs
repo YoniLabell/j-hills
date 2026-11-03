@@ -74,7 +74,9 @@ function jHillsImportResponse_(response) {
         if (id) fileIds.push(String(id));
       });
     } else {
-      answers[title] = value;
+      answers[title] = value instanceof Date
+        ? Utilities.formatDate(value, Session.getScriptTimeZone(), "HH:mm")
+        : Array.isArray(value) ? value.map(String) : String(value == null ? "" : value);
     }
   });
   // Google Form upload answer isn't an ordinary text value, but backend only

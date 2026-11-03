@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.models import Amenity
 from app.schemas.apartment import ApartmentCreate
 
-QUESTION = re.compile(r"^\s*(\d+)(?:[א-ת])?\s*[.]\s*")
+QUESTION = re.compile(r"^\s*(\d+)([א-ת]?)\s*[.]\s*")
 
 
 def numbered_answers(raw: dict) -> dict[str, str]:
@@ -21,8 +21,7 @@ def numbered_answers(raw: dict) -> dict[str, str]:
     for title, response in raw.items():
         match = QUESTION.match(title)
         if match:
-            suffix = "א" if re.match(r"^\\s*21א\\.", title) else ""
-            values[match.group(1) + suffix] = ", ".join(str(x) for x in response) if isinstance(response, list) else str(response or "").strip()
+            values[match.group(1) + match.group(2)] = ", ".join(str(x) for x in response) if isinstance(response, list) else str(response or "").strip()
     return values
 
 

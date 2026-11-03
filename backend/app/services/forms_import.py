@@ -21,7 +21,8 @@ def numbered_answers(raw: dict) -> dict[str, str]:
     for title, response in raw.items():
         match = QUESTION.match(title)
         if match:
-            values[match.group(1)] = ", ".join(str(x) for x in response) if isinstance(response, list) else str(response or "").strip()
+            suffix = "א" if re.match(r"^\\s*21א\\.", title) else ""
+            values[match.group(1) + suffix] = ", ".join(str(x) for x in response) if isinstance(response, list) else str(response or "").strip()
     return values
 
 
@@ -97,6 +98,7 @@ def apartment_from_answers(db: Session, raw: dict) -> ApartmentCreate:
         ("9", "קומה"), ("10", "מעלית"), ("11", "מדרגות"),
         ("18", "מיטות לפי חדר"), ("19", "מספר שירותים"),
         ("20", "מיטת תינוק"), ("21", "שינה בסלון"),
+        ("21א", "פירוט שינה בסלון"),
         ("22", "מיזוג וחימום"), ("23", "ציוד מטבח"),
         ("24", "כביסה"), ("25", "אינטרנט ובידור"), ("26", "שטחי חוץ"),
         ("27", "חניה"), ("28", "נגישות"), ("29", "מתקנים נוספים"),

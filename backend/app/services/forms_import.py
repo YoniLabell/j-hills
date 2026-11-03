@@ -73,7 +73,9 @@ def amenities_for(db: Session, a: dict) -> list[int]:
         "shabbat_hot_plate": ("פלטה",),
         "shabbat_kettle": ("מיחם",),
     }
-    if a.get("10", "").strip() == "לא":
+    if a.get("10", "").strip() in ("כן", "Yes", "yes"):
+        haystack += " מעלית"
+    elif a.get("10", "").strip() in ("לא", "No", "no"):
         terms.pop("elevator", None)
     return [
         item.id for item in db.scalars(select(Amenity))

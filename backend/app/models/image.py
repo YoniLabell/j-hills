@@ -9,6 +9,7 @@ class ApartmentImage(TimestampMixin, Base):
     __tablename__ = "apartment_images"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    google_form_drive_file_id: Mapped[str | None] = mapped_column(String(160), unique=True, index=True)
     apartment_id: Mapped[int] = mapped_column(
         ForeignKey("apartments.id", ondelete="CASCADE"), nullable=False, index=True
     )

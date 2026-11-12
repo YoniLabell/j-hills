@@ -128,7 +128,7 @@ def store_image(
 
     if settings.is_production:
         logger.warning(
-            "Cloudinary is not configured; storing image on local disk, which is NOT persistent on Render."
+            "Cloudinary is not configured; storing image on local disk. Ensure LOCAL_UPLOAD_DIR is on persistent storage."
         )
     optimized, width, height = _optimize(img)
     directory = Path(settings.local_upload_dir) / folder

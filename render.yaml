@@ -31,6 +31,10 @@ services:
       # the GitHub repository secret CRON_SECRET. Any long random string.
       - key: CRON_SECRET
         sync: false
+      - key: GOOGLE_FORMS_SECRET
+        sync: false
+      - key: LOCAL_UPLOAD_DIR
+        value: /var/data/uploads
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY

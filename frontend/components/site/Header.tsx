@@ -1,4 +1,3 @@
-import { House } from "lucide-react";
 import Link from "next/link";
 
 import type { Dictionary } from "@/lib/i18n";
@@ -14,18 +13,17 @@ export default function Header({ dict, settings, siteName }: { dict: Dictionary;
     { href: "/#contact", label: dict.nav.contact },
   ];
   return (
-    <header className="sticky top-0 z-40 border-b border-sand-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-sand-200 bg-sand-50/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5" aria-label={siteName}>
           {settings.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={settings.logo_url} alt="" className="h-9 w-auto" />
           ) : (
-            <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-gold-700 text-sm font-bold text-white">
-              <House className="h-4 w-4" />
-            </span>
+            // A setting sun: the logo mark of the sunset design.
+            <span aria-hidden="true" className="h-8 w-8 rounded-full bg-[radial-gradient(circle_at_50%_60%,#fff4d6_0_38%,#ffc078_40%,#ff8a6b_100%)] shadow-[0_0_18px_rgba(255,170,110,0.65)]" />
           )}
-          <span className="text-lg font-extrabold tracking-tight text-gold-700">{siteName}</span>
+          <span className="font-serif text-xl text-ink-900">{siteName}</span>
         </Link>
         <nav aria-label="Main" className="hidden items-center gap-7 md:flex">
           {links.map((l) => (

@@ -1,32 +1,42 @@
 @import "tailwindcss";
 
-/* Direction 3, "clean and transparent": white and cool greys with one teal brand colour.
-   Token names are kept from the first design so every component re-themes at once:
-   sand = neutral surfaces, gold/olive = brand teal, ink = text, terracotta = errors. */
+/* Design "sunset over the walls": warm sunset tones from apricot through coral and
+   rose to dusk violet, soft rounded shapes. Token names are kept from the first design
+   so every component re-themes at once: sand = warm neutral surfaces, gold = rose
+   accents and links, olive = primary buttons, ink = text, terracotta = errors. */
 @theme {
-  --color-sand-50: #ffffff;
-  --color-sand-100: #f6f8f9;
-  --color-sand-200: #e8edf0;
-  --color-sand-300: #d5dde2;
-  --color-sand-400: #b8c4cc;
-  --color-gold-400: #5eb8ad;
-  --color-gold-500: #14998b;
-  --color-gold-600: #0f857a;
-  --color-gold-700: #0f766e;
-  --color-olive-600: #138377;
-  --color-olive-700: #0f766e;
-  --color-olive-800: #0b5d56;
-  --color-ink-900: #17212b;
-  --color-ink-800: #2d3b46;
-  --color-ink-700: #46535e;
-  --color-ink-500: #6b7882;
+  --color-sand-50: #fff8f3;
+  --color-sand-100: #fff0ea;
+  --color-sand-200: #f6e1e6;
+  --color-sand-300: #ecd3dd;
+  --color-sand-400: #d9b6c5;
+  --color-gold-400: #ffb39c;
+  --color-gold-500: #ff8a6b;
+  --color-gold-600: #d0625a;
+  --color-gold-700: #b04878;
+  --color-olive-600: #d06f97;
+  --color-olive-700: #c2568a;
+  --color-olive-800: #a24474;
+  --color-ink-900: #3a2430;
+  --color-ink-800: #4e3441;
+  --color-ink-700: #6b4a5c;
+  --color-ink-500: #8a6b7a;
   --color-terracotta-500: #d0573c;
   --color-terracotta-600: #b5432b;
-  --color-star: #e4a11b;
-  --color-mint: #effaf8;
+  --color-star: #f0a530;
+  --color-mint: #fff0ea;
+  --color-dusk: #6c5b9e;
 
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display), var(--font-body), ui-sans-serif, sans-serif;
+}
+
+/* The sunset sky used behind the homepage hero. */
+.sunset-sky {
+  background: linear-gradient(160deg, #ffcf9d 0%, #ff9a8b 38%, #c86b98 72%, #6c5b9e 100%);
+}
+.sunset-button {
+  background: linear-gradient(135deg, #ff8a6b, #c2568a);
 }
 
 :root {
@@ -37,10 +47,15 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Headings use the same family as body text, heavier and slightly tighter. */
+/* Headings use the rounded display face. It has a single weight, so headings are set
+   at 400 (unlayered, this overrides Tailwind's bold utilities) instead of faux-bold. */
+h1,
+h2,
+h3,
 .font-serif {
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 body {
@@ -70,7 +85,7 @@ html .rdp-root {
   --rdp-range_middle-background-color: var(--color-sand-200);
   --rdp-range_start-date-background-color: var(--color-olive-700);
   --rdp-range_end-date-background-color: var(--color-olive-700);
-  --rdp-today-color: var(--color-terracotta-600);
+  --rdp-today-color: var(--color-gold-600);
   font-size: 0.95rem;
 }
 html .rdp-months {

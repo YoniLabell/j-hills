@@ -60,8 +60,8 @@ export default function SearchForm({
     router.push(`/apartments${params.size ? `?${params}` : ""}`);
   }
 
-  const field = "w-full rounded-xl border border-sand-300 bg-white px-3 py-2.5 text-ink-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-400/30";
-  const label = "mb-1 block text-xs font-bold text-ink-700";
+  const field = "w-full rounded-2xl border border-sand-300 bg-white px-3 py-2.5 text-ink-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-400/30";
+  const label = "mb-1 block px-1 text-xs font-medium text-gold-700";
   const hero = variant === "hero";
 
   return (
@@ -70,8 +70,8 @@ export default function SearchForm({
       role="search"
       className={
         hero
-          ? "grid gap-3 rounded-2xl border border-sand-300 bg-white p-3 shadow-lg shadow-ink-900/5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.7fr_auto] lg:items-end"
-          : "grid gap-3 rounded-2xl border border-sand-300 bg-white p-3 shadow-sm sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.6fr_1fr_0.7fr_auto] lg:items-end"
+          ? "grid gap-2 rounded-[1.75rem] bg-white/85 p-3 shadow-[0_20px_50px_rgba(108,91,158,0.25)] backdrop-blur-md sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.7fr_auto] lg:items-end"
+          : "grid gap-3 rounded-[1.75rem] bg-white p-3 shadow-[0_12px_30px_rgba(200,107,152,0.12)] sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.6fr_1fr_0.7fr_auto] lg:items-end"
       }
     >
       <div>
@@ -124,7 +124,7 @@ export default function SearchForm({
       )}
       <button
         type="submit"
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-olive-700 px-6 py-3 font-bold text-white shadow-sm transition hover:bg-olive-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-700 sm:col-span-2 lg:col-span-1"
+        className="sunset-button inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-bold text-white shadow-sm transition hover:bg-olive-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-700 sm:col-span-2 lg:col-span-1"
       >
         <Search className="h-4 w-4" aria-hidden="true" />
         {hero ? dict.search.cta : dict.search.apply}

@@ -107,7 +107,7 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
         <div className="min-w-0 space-y-12">
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {facts.map((f) => (
-              <li key={f.label} className="rounded-2xl bg-white p-4 text-center border border-sand-200">
+              <li key={f.label} className="rounded-3xl bg-white p-4 text-center shadow-[0_8px_22px_rgba(200,107,152,0.10)]">
                 <f.icon className="mx-auto h-6 w-6 text-gold-600" aria-hidden="true" />
                 <p className="mt-2 text-2xl font-semibold">{f.value}</p>
                 <p className="text-xs text-ink-500">{f.label}</p>
@@ -155,11 +155,11 @@ export default async function ApartmentPage({ params, searchParams }: { params: 
               </ul>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-sand-200">
+              <div className="flex items-center gap-3 rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(200,107,152,0.10)]">
                 <Clock className="h-6 w-6 text-gold-600" aria-hidden="true" />
                 <div><p className="text-xs text-ink-500">{d.checkIn}</p><p className="font-semibold">{t(d.after, { t: formatTime(apt.check_in_time) })}</p></div>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-sand-200">
+              <div className="flex items-center gap-3 rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(200,107,152,0.10)]">
                 <Clock className="h-6 w-6 text-gold-600" aria-hidden="true" />
                 <div><p className="text-xs text-ink-500">{d.checkOut}</p><p className="font-semibold">{t(d.before, { t: formatTime(apt.check_out_time) })}</p></div>
               </div>

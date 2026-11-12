@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Heebo } from "next/font/google";
+import { Heebo, Varela_Round } from "next/font/google";
 
 import { getSettings } from "@/lib/api";
 import { siteUrl } from "@/lib/config";
@@ -11,7 +11,13 @@ import "./globals.css";
 // Every page depends on the visitor’s language cookie and live availability.
 export const dynamic = "force-dynamic";
 
-// Heebo covers Latin and Hebrew, so both languages share one consistent typeface.
+// Both faces cover Latin and Hebrew: Varela Round for headings, Heebo for text.
+const display = Varela_Round({
+  variable: "--font-display",
+  subsets: ["latin", "hebrew"],
+  weight: "400",
+  display: "swap",
+});
 const body = Heebo({
   variable: "--font-body",
   subsets: ["latin", "hebrew"],
@@ -32,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#fff8f3",
   width: "device-width",
   initialScale: 1,
 };
@@ -40,7 +46,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, dict } = await getI18n();
   return (
-    <html lang={locale} dir={dict.dir} className={`${body.variable} h-full`}>
+    <html lang={locale} dir={dict.dir} className={`${display.variable} ${body.variable} h-full`}>
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>

@@ -194,10 +194,10 @@ export default function BookingWidget({
     }).catch(() => undefined);
   }
 
-  const input = "w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-400/30";
+  const input = "w-full rounded-2xl border border-sand-300 bg-white px-3.5 py-2.5 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-400/30";
 
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-xl shadow-ink-900/5 border border-sand-200 sm:p-6">
+    <div className="rounded-[1.75rem] bg-white p-5 shadow-[0_18px_44px_rgba(108,91,158,0.18)] sm:p-6">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-xl font-extrabold">{b.title}</h2>
         <p>
@@ -206,7 +206,7 @@ export default function BookingWidget({
         </p>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-ink-900/10 p-2" aria-live="polite">
+      <div className="mt-4 rounded-3xl border border-sand-200 p-2" aria-live="polite">
         {loadError ? (
           <p className="p-6 text-center text-sm text-terracotta-600">{b.loadError}</p>
         ) : !blocked ? (
@@ -244,7 +244,7 @@ export default function BookingWidget({
         )}
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 overflow-hidden rounded-2xl border border-ink-900/10 text-sm">
+      <dl className="mt-4 grid grid-cols-2 overflow-hidden rounded-3xl border border-sand-200 text-sm">
         <div className="border-e border-ink-900/10 p-3">
           <dt className="text-xs font-semibold text-ink-500">{dict.search.checkIn}</dt>
           <dd className="mt-0.5 font-medium">{checkIn ? formatDate(checkIn, locale) : "—"}</dd>
@@ -319,7 +319,7 @@ export default function BookingWidget({
               }
               recordLead("whatsapp");
             }}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-lg font-semibold ${nameOk ? "" : "opacity-60"} text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]`}
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-6 py-3.5 text-lg font-semibold ${nameOk ? "" : "opacity-60"} text-white shadow-sm transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25D366]`}
           >
             <WhatsAppIcon className="h-5 w-5" /> {b.bookWhatsapp}
           </a>

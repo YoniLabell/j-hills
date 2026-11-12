@@ -4,7 +4,13 @@ set -e
 
 cd /app/backend
 
-# 1. Migrations (an advisory lock in alembic/env.py prevents concurrent runs).
+# On Render, never put SQLite on an ephemeral filesystem.
+case "${DATABASE_URL:-}" in
+  sqlite:////var/data/*) test -d /var/data && test -w /var/data || { echo "SQLite persistent disk /var/data is missing or not writable" >&2; exit 1; } ;;
+  sqlite:*) if [ "${ENVIRONMENT:-}" = production ]; then echo "Production SQLite must use sqlite:////var/data/... on a persistent disk" >&2; exit 1; fi ;;
+esac
+
+# 1. Database migrations (Alembic supports SQLite and PostgreSQL).
 alembic upgrade head
 
 # 2. First admin from ADMIN_EMAIL / ADMIN_PASSWORD, only if none exists yet

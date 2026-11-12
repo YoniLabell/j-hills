@@ -1,50 +1,26 @@
-# FREE Render Blueprint — everything in ONE web service.
-#
-#   jerusalem-apartments     Docker web service (free): Next.js website + FastAPI API
-#   jerusalem-apartments-db  PostgreSQL (free)
-#
-# Render → New → Blueprint → pick this repository. Values marked `sync: false`
-# are typed in the Render dashboard and never stored in Git.
-#
-# Free-plan limits to know about:
-#   * The service sleeps after ~15 minutes without traffic; the first visit
-#     afterwards takes about a minute to wake it up.
-#   * Free PostgreSQL databases expire 30 days after creation — upgrade the
-#     database plan (or back it up) before then to keep your data.
-#   * Render has no free Cron Jobs: the hourly Airbnb sync is triggered by the
-#     GitHub Actions workflow in .github/workflows/sync-calendars.yml instead.
-#   * The disk is wiped on every deploy: configure Cloudinary for photos.
-#
-# The paid multi-service setup is in render.paid.yaml.
-
-databases:
-  - name: jerusalem-apartments-db
-    databaseName: jerusalem_apartments
-    user: jerusalem_apartments
-    plan: free
-    region: frankfurt
-    postgresMajorVersion: "16"
-    ipAllowList: []            # no public access; the service connects privately
-
+# Paid single-instance SQLite deployment: Next.js + FastAPI + persistent disk.
+# Review Render's existing service before applying this blueprint. Do not
+# connect an existing PostgreSQL service without updating its DATABASE_URL.
 services:
   - type: web
-    name: jerusalem-apartments
+    name: jholiday
     runtime: docker
-    plan: free
-    region: frankfurt          # closest Render region to Israel; must match the database
+    plan: starter
+    region: frankfurt
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    # start.sh runs migrations, creates the first admin, then starts the API and the website.
     healthCheckPath: /health
+    disk:
+      name: sqlite-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: jerusalem-apartments-db
-          property: connectionString
+        value: sqlite:////var/data/apartments.db
       - key: SECRET_KEY
-        generateValue: true    # Render generates a strong random value once
+        sync: false          # Preserve existing admin sessions; supply a strong secret
       # First admin, created automatically on startup if no admin exists yet.
       # You can delete ADMIN_PASSWORD after your first login.
       - key: ADMIN_EMAIL
@@ -55,6 +31,10 @@ services:
       # the GitHub repository secret CRON_SECRET. Any long random string.
       - key: CRON_SECRET
         sync: false
+      - key: GOOGLE_FORMS_SECRET
+        sync: false
+      - key: LOCAL_UPLOAD_DIR
+        value: /var/data/uploads
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
@@ -67,3 +47,4 @@ services:
       # apartments. Delete them from the admin whenever you like.
       - key: SEED_DEMO_DATA
         value: "false"
+

@@ -1,6 +1,6 @@
 from collections.abc import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import get_settings
@@ -13,11 +13,18 @@ class Base(DeclarativeBase):
 def _make_engine(url: str):
     kwargs: dict = {"pool_pre_ping": True}
     if url.startswith("sqlite"):
-        kwargs["connect_args"] = {"check_same_thread": False}
+        kwargs["connect_args"] = {"check_same_thread": False, "timeout": 30}
     else:
         # Small pool: Render's entry-level Postgres plans allow few connections.
         kwargs.update(pool_size=5, max_overflow=5, pool_recycle=1800)
-    return create_engine(url, **kwargs)
+    db_engine = create_engine(url, **kwargs)
+    if db_engine.dialect.name == "sqlite":
+        @event.listens_for(db_engine, "connect")
+        def configure_sqlite(connection, _):
+            connection.execute("PRAGMA foreign_keys=ON")
+            connection.execute("PRAGMA busy_timeout=30000")
+            connection.execute("PRAGMA journal_mode=WAL")
+    return db_engine
 
 
 engine = _make_engine(get_settings().database_url)

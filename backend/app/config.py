@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
     environment: str = "development"
-    database_url: str = "postgresql+psycopg://ja:ja@localhost:5432/jerusalem_apartments"
+    database_url: str = "sqlite:///./apartments.db"
 
     secret_key: str = INSECURE_DEFAULT_SECRET
     access_token_expire_minutes: int = 60 * 12

@@ -3,7 +3,7 @@
 # connect an existing PostgreSQL service without updating its DATABASE_URL.
 services:
   - type: web
-    name: jerusalem-apartments
+    name: jholiday
     runtime: docker
     plan: starter
     region: frankfurt
@@ -20,7 +20,7 @@ services:
       - key: DATABASE_URL
         value: sqlite:////var/data/apartments.db
       - key: SECRET_KEY
-        generateValue: true    # Render generates a strong random value once
+        sync: false          # Preserve existing admin sessions; supply a strong secret
       # First admin, created automatically on startup if no admin exists yet.
       # You can delete ADMIN_PASSWORD after your first login.
       - key: ADMIN_EMAIL

@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models import Apartment, BlockedDate
@@ -116,12 +116,24 @@ def blocked_periods(db: Session, apartment_id: int, start: date, end: date) -> l
 
 
 def lock_apartment(db: Session, apartment_id: int) -> Apartment | None:
-    """Take a row lock on the apartment for the rest of the transaction.
+    """Serialize calendar-changing transactions before checking availability.
 
     Every write that changes an apartment's calendar (booking confirmation,
     calendar sync) takes this lock first, which serializes them per apartment
-    and makes "check availability, then insert block" race-free on PostgreSQL.
+    and makes "check availability, then insert block" race-free on PostgreSQL.\n    SQLite uses an early no-op UPDATE to acquire its single-writer lock.
     """
+    if db.bind is not None and db.bind.dialect.name == "sqlite":
+        # SQLite ignores SELECT FOR UPDATE. A no-op UPDATE takes the database
+        # write lock before the availability check and holds it until commit.
+        # All booking and calendar-sync writers use this function.
+        result = db.execute(
+            update(Apartment)
+            .where(Apartment.id == apartment_id)
+            .values(id=Apartment.id)
+        )
+        if result.rowcount == 0:
+            return None
+        return db.get(Apartment, apartment_id)
     return db.scalar(
         select(Apartment)
         .where(Apartment.id == apartment_id)
